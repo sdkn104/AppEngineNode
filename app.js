@@ -2,6 +2,7 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const Private = require('./Private.js')
 const myGmail = require('./myGmail.js')
 //console.log(require)
 
@@ -13,7 +14,7 @@ function loginCheck(req){
     const html = "<form method='POST'>User Name<input type='text' name=username><br>Password<input type='password' name='password'><br><input type='submit'></form>"
     console.log(req.method)
     console.log(req.body.username)
-    if( req.method === "POST" && req.body.username === "sadakane" && req.body.password === "goro") {
+    if( req.method === "POST" && req.body.username === Private.app_username && req.body.password === Private.app_password) {
         console.log(req.method)
         return null;
     } else {
