@@ -1,27 +1,42 @@
-// Copyright 2017 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 'use strict';
 
-// [START gae_node_request_example]
 const express = require('express');
+const bodyParser = require('body-parser');
+const myGmail = require('./myGmail.js')
+//console.log(require)
 
 const app = express();
+app.use(bodyParser.urlencoded({ extended: true }));
+
+
+function loginCheck(req){
+    const html = "<form method='POST'>User Name<input type='text' name=username><br>Password<input type='password' name='password'><br><input type='submit'></form>"
+    console.log(req.method)
+    console.log(req.body.username)
+    if( req.method === "POST" && req.body.username === "sadakane" && req.body.password === "goro") {
+        console.log(req.method)
+        return null;
+    } else {
+        return html;
+    }
+}
+
 
 app.get('/', (req, res) => {
-    let body = req.protocol + '://' + req.headers.host + req.url;
-    res.status(200).send('Hello, world! ' + body).end();
+    res.status(200).send('Hello, world! I am App Engine by NodeJS').end();
+});
+
+app.all('/gmail_list', (req, res) => {
+    let loginForm  = loginCheck(req);
+    if(loginForm) {
+        res.status(200).send(loginForm).end();
+        return;
+    }
+    myGmail.listMessages()
+    .then(msgList => {
+        const html = JSON.stringify(msgList, null, 4).replace(/\n/g, "<br>\n");
+        res.status(200).send(html).end();
+    });
 });
 
 app.get('/*', (req, resp) => {
@@ -56,6 +71,6 @@ app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
   console.log('Press Ctrl+C to quit.');
 });
-// [END gae_node_request_example]
+
 
 module.exports = app;

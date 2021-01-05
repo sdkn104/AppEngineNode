@@ -1,0 +1,14 @@
+% npm install
+  -> package-lock.jsonが存在しないとき
+        package.jsonに基づいて dependency がインストールされ、
+        実際にインストールされたバージョンがpackage-lock.jsonに書かれる。
+-> package-lock.jsonが存在するとき
+         package-lock.jsonに基づいてインストールされるが、
+         package.json指定されたバージョンとの矛盾があれば、package.jsonが優先され、
+         実際にインストールされたバージョンがpackage-lock.jsonに書かれる。。
+■テスト
+% npm start
+   -> web server起動
+　　-> Cloud Shell ツールバーの [ウェブでプレビュー] ウェブでプレビュー アイコンをクリックするとWEBブラウザで表示
+■Deploy
+% gcloud app deploy

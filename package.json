@@ -17,7 +17,8 @@
     "test": "mocha --exit test/*.test.js"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "googleapis": "^39.2.0"
   },
   "devDependencies": {
     "mocha": "^8.1.3",
