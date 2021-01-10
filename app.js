@@ -38,6 +38,9 @@ app.all('/gmail_list', (req, res) => {
     .then(msgList => {
         const html = JSON.stringify(msgList, null, 4).replace(/\n/g, "<br>\n");
         res.status(200).send(html).end();
+    })
+    .catch(err => {
+        res.status(500).send(err.toString()).end();
     });
 });
 
@@ -51,6 +54,9 @@ app.all('/ymail_list', (req, res) => {
     .then(msgList => {
         const html = JSON.stringify(msgList, null, 4).replace(/\n/g, "<br>\n");
         res.status(200).send(html).end();
+    })
+    .catch(err => {
+        res.status(500).send(err.toString()).end();
     });
 });
 
