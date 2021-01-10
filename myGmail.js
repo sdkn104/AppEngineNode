@@ -2,6 +2,8 @@ const fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
 
+
+
 // If modifying these scopes, delete CLIENT_TOKEN_FILE.
 const SCOPES = ['https://www.googleapis.com/auth/gmail.send','https://www.googleapis.com/auth/gmail.readonly'];
 // The file token.json stores the user's access and refresh tokens, and is
@@ -78,12 +80,6 @@ function getNewToken(oAuth2Client, callback) {
 
 // -------------------------------------------------------
 
-async function main(){
-    const results = await listMessages();
-    return results;
-}
-
-//main();
 
 async function listMessages() {
     const oAuth2Client = await getAuthrizedClient();
@@ -121,4 +117,16 @@ async function listMessages() {
     return results;
 }
 
+// --- MAIN
+if (require.main === module) { 
+    console.log('called directly'); 
+    listMessages()
+    .then(results => {
+        console.log(results)
+    });
+} else { 
+    console.log('required as a module'); 
+}
+
+// --- EXPORT
 exports.listMessages = listMessages;

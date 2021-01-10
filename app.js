@@ -4,6 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const Private = require('./Private.js')
 const myGmail = require('./myGmail.js')
+const myYahooMail = require('./myYahooMail.js')
 //console.log(require)
 
 const app = express();
@@ -34,6 +35,19 @@ app.all('/gmail_list', (req, res) => {
         return;
     }
     myGmail.listMessages()
+    .then(msgList => {
+        const html = JSON.stringify(msgList, null, 4).replace(/\n/g, "<br>\n");
+        res.status(200).send(html).end();
+    });
+});
+
+app.all('/ymail_list', (req, res) => {
+    let loginForm  = loginCheck(req);
+    if(loginForm) {
+        res.status(200).send(loginForm).end();
+        return;
+    }
+    myYahooMail.listMessages()
     .then(msgList => {
         const html = JSON.stringify(msgList, null, 4).replace(/\n/g, "<br>\n");
         res.status(200).send(html).end();
