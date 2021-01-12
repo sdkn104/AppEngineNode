@@ -2,10 +2,8 @@
 var Private = require('./Private.js')
 
 var imaps = require('imap-simple');
-//const _ = require('lodash');
 const simpleParser = require('mailparser').simpleParser;
-const iconv = require('iconv');
-
+const Iconv = require('iconv').Iconv;
 
 // 転送元メールアカウント情報
 const src_mail_server = "imap.mail.yahoo.co.jp"
@@ -37,14 +35,17 @@ async function listMessages(){
     yesterday = yesterday.toISOString();
     var searchCriteria = [["SINCE", yesterday]];
     var fetchOptions = {
-        bodies: ['HEADER', 'TEXT'],
+        struct: true,
+        bodies: ['HEADER', 'TEXT', ''], // mail header, mail body, mail header and body
         markSeen: false
     };
     const messages = await connection.search(searchCriteria, fetchOptions);
     console.log('search results: '+messages.length);
     const results = [];
     for(let message of messages){
+        console.log("-------------")
         const result = {}
+        console.log(message.attributes.struct)
         //console.log(message)
         // read header
         const header = message.parts.find(part => part.which === 'HEADER');
@@ -53,50 +54,21 @@ async function listMessages(){
         result.date = header.body.date
         result.from = header.body.from
         result.contentType = header.body["content-type"][0]
-        console.log("-------------")
         console.log(result.subject)
         // read text
         const text = message.parts.find(part => part.which === 'TEXT');
         //console.log(text)
-        //var html = Buffer.from(text.body, 'base64').toString('utf8');
-        //console.log(html)
+        const all = message.parts.find(part => part.which === '' )
+        // parse mail
         // https://github.com/chadxz/imap-simple#usage-of-mailparser-in-combination-with-imap-simple
-        const mail = await simpleParser(`Imap-Id: ${message.attributes.uid}\r\n${text.body}`);
+        //const mail = await simpleParser(`Imap-Id: ${message.attributes.uid}\r\n${all.body}`, { Iconv });
+        const mail = await simpleParser(`Imap-Id: ${message.attributes.uid}\r\n${all.body}`);
         //console.log(mail)
-        // simpleParserはiconv-liteを使っているのでiso-2022-jpを正しく変換できない
-        // charsetを見てiconvで変換
-        let m, f;
-        let charset = null;
-        if( result.contentType && (m = result.contentType.match(/charset="(.+)"/)) ) {
-            charset = m[1];
-            console.log("get charset from header part")
-        } else if( f = mail.headerLines.find(o => o.key === "content-type") ) {
-            const match2 = f.line.match(/charset="(.+)"/);
-            charset = match2 ? match2[1] : null;
-            console.log("get charset from parsed mail headerLines")
-        }
-        console.log("charset: "+charset)
-        result.charset = charset
-        if(charset){
-            const conv = new iconv.Iconv(charset, "UTF-8");
-            if(mail.subject) console.log('subject: ' + conv.convert(mail.subject).toString());
-            if(mail.text) {
-                result.text = conv.convert(mail.text).toString();
-                result.text = result.text.slice(0,1000)
-                //console.log(result.text);
-            }
-            // if(mail.html) console.log(conv.convert(mail.html).toString());
-        }else{
-            console.log('subject: ' + mail.subject);
-            //console.log(mail.text);
-            // console.log(mail.html);
-            result.text = mail.text
-            result.text = result.text.slice(0,1000)
-        }
-        // break;//テスト用に1件だけで止めたいときにコメントアウト外す
+        console.log(mail.text.slice(0,100))
+        result.text = mail.text
         results.push(result)
     }
-    console.log(results)
+    //console.log(results)
     await connection.end();
     return results;
 }
@@ -110,6 +82,7 @@ if (require.main === module) {
     console.log('called directly'); 
     listMessages()
     .then(results => {
+        results = results.map(e => { e.text = e.text.slice(0,1000); return e;});
         console.log(results)
     });
 } else { 

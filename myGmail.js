@@ -95,25 +95,31 @@ async function listMessages() {
     console.log(res.data.messages)    
   
     let results = [];
-    for(let i=0; i<res.data.messages.length; i++){   
-        const msg = res.data.messages[i];        
+    for(let msg of res.data.messages){   
         const topid = msg.id;
         //console.log(`- ${topid}`);
         const message = await gmail.users.messages.get({userId:'me', id:topid});
         const headers = message.data.payload.headers;
         //console.log("-------------------------")
         let result = {};
-        result.Subject = headers.find(e => e.name === "Subject").value;
-        result.From = headers.find(e => e.name === "From").value;
-        result.To = headers.find(e => e.name === "To").value;
-        result.Date = headers.find(e => e.name === "Date").value;
-        const base64mailBody = message.data.payload.parts[0].body.data; //parts[0]がテキスト、parts[1]がHTMLメールっぽい
+        //console.log(headers)
+        result.Subject = headers.find(e => e.name.toLowerCase() === "subject").value;
+        result.From = headers.find(e => e.name.toLowerCase() === "from").value;
+        result.To = headers.find(e => e.name.toLowerCase() === "to").value;
+        result.Date = headers.find(e => e.name.toLowerCase() === "date").value;
+        //console.log(message.data.payload)
+        let base64mailBody;
+        if( message.data.payload.parts ){
+            base64mailBody = message.data.payload.parts[0].body.data; //parts[0]がテキスト、parts[1]がHTMLメールっぽい
+        } else {
+            base64mailBody = message.data.payload.body.data;
+        }
         const mailBody = Buffer.from(base64mailBody, 'base64').toString(); //メール本文はBase64になってるので変換
         result.Body = mailBody;
         console.log("Subject: "+result.Subject)
         results.push(result)
     }
-    console.log(results);
+    //console.log(results);
     return results;
 }
 
@@ -122,6 +128,7 @@ if (require.main === module) {
     console.log('called directly'); 
     listMessages()
     .then(results => {
+        results = results.map(e => {e.Body = e.Body.slice(0,500); return e;})
         console.log(results)
     });
 } else { 
