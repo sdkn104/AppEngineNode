@@ -2,7 +2,7 @@ const fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
 
-
+// ===== AUTHENTICATION ======================================================
 
 // If modifying these scopes, delete CLIENT_TOKEN_FILE.
 const SCOPES = ['https://www.googleapis.com/auth/gmail.send','https://www.googleapis.com/auth/gmail.readonly'];
@@ -78,7 +78,7 @@ function getNewToken(oAuth2Client, callback) {
   });
 }
 
-// -------------------------------------------------------
+// ===== BODY ======================================================
 
 
 async function listMessages() {

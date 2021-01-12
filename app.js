@@ -36,6 +36,7 @@ app.all('/gmail_list', (req, res) => {
     }
     myGmail.listMessages()
     .then(msgList => {
+        msgList = msgList.map(e => {e.Body = e.Body.slice(0,1000); return e;});
         const html = JSON.stringify(msgList, null, 4).replace(/\n/g, "<br>\n");
         res.status(200).send(html).end();
     })
@@ -52,6 +53,7 @@ app.all('/ymail_list', (req, res) => {
     }
     myYahooMail.listMessages()
     .then(msgList => {
+        msgList = msgList.map(e => {e.Body = e.Body.slice(0,1000); return e;});
         const html = JSON.stringify(msgList, null, 4).replace(/\n/g, "<br>\n");
         res.status(200).send(html).end();
     })

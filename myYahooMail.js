@@ -50,10 +50,10 @@ async function listMessages(){
         // read header
         const header = message.parts.find(part => part.which === 'HEADER');
         //console.log(header)
-        result.subject = header.body.subject
-        result.date = header.body.date
-        result.from = header.body.from
-        result.contentType = header.body["content-type"][0]
+        result.Subject = header.body.subject
+        result.Date = header.body.date
+        result.From = header.body.from
+        result.ContentType = header.body["content-type"][0]
         console.log(result.subject)
         // read text
         const text = message.parts.find(part => part.which === 'TEXT');
@@ -65,7 +65,7 @@ async function listMessages(){
         const mail = await simpleParser(`Imap-Id: ${message.attributes.uid}\r\n${all.body}`);
         //console.log(mail)
         console.log(mail.text.slice(0,100))
-        result.text = mail.text
+        result.Body = mail.text
         results.push(result)
     }
     //console.log(results)
@@ -82,7 +82,7 @@ if (require.main === module) {
     console.log('called directly'); 
     listMessages()
     .then(results => {
-        results = results.map(e => { e.text = e.text.slice(0,1000); return e;});
+        results = results.map(e => { e.Body = e.Body.slice(0,1000); return e;});
         console.log(results)
     });
 } else { 
