@@ -5,3 +5,7 @@ exports.IFTTT_key = "uoVHdqccPNfLG8UbUR6Al"
 exports.yahoo_mail_password = "gorosan"
 exports.app_username = "sadakane"
 exports.app_password = "gorosan3"
+exports.ftp_nas_host = "sdkn104.hopto.org"
+exports.ftp_nas_port = 50021
+exports.ftp_nas_username = "sadakane"
+exports.ftp_nas_password = "gorosan4252karatani"
