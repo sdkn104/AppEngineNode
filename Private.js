@@ -7,5 +7,5 @@ exports.app_username = "sadakane"
 exports.app_password = "gorosan3"
 exports.ftp_nas_host = "sdkn104.hopto.org"
 exports.ftp_nas_port = 50021
-exports.ftp_nas_username = "sadakane"
-exports.ftp_nas_password = "gorosan4252karatani"
+exports.ftp_nas_username = "toshiyuki"
+exports.ftp_nas_password = "gorosan4252toshi4"
