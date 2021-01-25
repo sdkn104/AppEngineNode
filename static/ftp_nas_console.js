@@ -11,7 +11,7 @@ var app = new Vue({
     input_download:"",
     loginFormStyle:{display:"none"},
     loginFormUsername:"sadakane",
-    loginFormPassword:"gorosan3"
+    loginFormPassword:""
   },
   methods: {
     onclick_open: onclick_open,
