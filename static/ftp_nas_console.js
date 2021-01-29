@@ -1,5 +1,45 @@
 
+
 console.log("loading ftp_nas_console.js");
+
+
+// Component Login Form
+
+Vue.component('loginForm', {
+  props: ['formDisplay'],
+  data: function() {
+      return {
+        loginFormUsername:"sadakane",
+        loginFormPassword:"",
+        modalStyle: {
+            display: "block",
+            position: "fixed",
+            zIndex: 1,
+            left: 0,
+            top: 0,
+            height: "100%",
+            width: "100%",
+            overflow: "auto",
+            backgroundColor:"gray",
+        },
+        modalContentStyle: {
+            backgroundColor: "white",
+            width: "500px",
+            margin: "20% auto",
+        }
+      };
+  },
+  template: `
+    <div class="modal" v-bind:style="modalStyle" v-if="formDisplay">
+        <div class="modal-content" v-bind:style="modalContentStyle">
+            <input type="text" placeholder="Enter Username" class="form-control" v-model="loginFormUsername">
+            <input type="password" placeholder="Enter Password" class="form-control" v-model="loginFormPassword">
+            <button class="btn btn-lg btn-primary btn-block" type="button" v-on:click="$emit('click_login', {username:loginFormUsername, password:loginFormPassword})">Login</button>
+        </div>
+    </div>
+  `,
+});
+
 
 var app = new Vue({
   el: '#app',
@@ -9,9 +49,7 @@ var app = new Vue({
     files:[],
     input_cd:".",
     input_download:"",
-    loginFormStyle:{display:"none"},
-    loginFormUsername:"sadakane",
-    loginFormPassword:""
+    enableLoginForm: false,
   },
   methods: {
     onclick_open: onclick_open,
@@ -26,14 +64,15 @@ var app = new Vue({
 
 
 function onclick_open() {
-    app.loginFormStyle.display = "block";
+    app.enableLoginForm = true;
 };
 
-function onclick_loginFormOK() {
+function onclick_loginFormOK(e) {
+    console.log(e)
     fetch_json({
             command: "open", 
-            username: app.loginFormUsername, 
-            password: app.loginFormPassword
+            username: e.username, 
+            password: e.password
     })
     .then(data => {
         if( data.greeting ) {
@@ -44,7 +83,7 @@ function onclick_loginFormOK() {
     .catch(err  => {
         app.message = err.stack || err.toString();
     });
-    app.loginFormStyle.display = "none"
+    app.enableLoginForm = false
     app.loginFormPassword = ""
 };
 
@@ -79,7 +118,6 @@ function ftp_cd(dirName){
     app.message = "sending cd command...";
     fetch_json({command:"cd", dirName:dirName})
     .then(data => {
-        console.log(data);
         app.files = data.list;
         app.cwd = data.cwd;
         app.message = ""
@@ -99,18 +137,20 @@ function ftp_download(fileName){
         body: JSON.stringify({command:"download", fileName:fileName})
     })
     .then(response => {
+        console.log("got response") // ここまでに時間がかかる
         if (!response.ok) {
             throw new Error(`${response.status} ${response.statusText}`);
         }
-        console.log("got response")
+        console.log(response.headers.get('content-length'));
         app.message = "get response "+response.status;
-        return response.blob(); // ##### want STREAMING
+        return response.blob();
     })
     .then(blob => {
         app.message = "get blob: "+blob.size+" in "+blob.type;
         console.log(blob);
-        const newBlob = new Blob([blob], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(newBlob);
+        //const newBlob = new Blob([blob], { type: 'application/octet-stream' });
+        //const url = URL.createObjectURL(newBlob);
+        const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         document.body.appendChild(a);
         a.download = fileName.replace(/^.*[/]/, "");
