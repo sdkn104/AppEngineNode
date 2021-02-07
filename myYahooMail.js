@@ -25,54 +25,72 @@ var config = {
     }
 };
 
-
-async function listMessages(){
+async function listBoxes(){
     const connection = await imaps.connect(config);
-    await connection.openBox('INBOX');
-    var delay = 24 * 3600 * 1000;
-    var yesterday = new Date();
-    yesterday.setTime(Date.now() - delay);
-    yesterday = yesterday.toISOString();
-    var searchCriteria = [["SINCE", yesterday]];
-    var fetchOptions = {
-        struct: true,
-        bodies: ['HEADER', 'TEXT', ''], // mail header, mail body, mail header and body
-        markSeen: false
-    };
-    const messages = await connection.search(searchCriteria, fetchOptions);
-    console.log('search results: '+messages.length);
-    const results = [];
-    for(let message of messages){
-        console.log("-------------")
-        const result = {}
-        console.log(message.attributes.struct)
-        //console.log(message)
-        // read header
-        const header = message.parts.find(part => part.which === 'HEADER');
-        //console.log(header)
-        result.Subject = header.body.subject
-        result.Date = header.body.date
-        result.From = header.body.from
-        result.ContentType = header.body["content-type"][0]
-        console.log(result.subject)
-        // read text
-        const text = message.parts.find(part => part.which === 'TEXT');
-        //console.log(text)
-        const all = message.parts.find(part => part.which === '' )
-        // parse mail
-        // https://github.com/chadxz/imap-simple#usage-of-mailparser-in-combination-with-imap-simple
-        //const mail = await simpleParser(`Imap-Id: ${message.attributes.uid}\r\n${all.body}`, { Iconv });
-        const mail = await simpleParser(`Imap-Id: ${message.attributes.uid}\r\n${all.body}`);
-        //console.log(mail)
-        console.log(mail.text.slice(0,100))
-        result.Body = mail.text
-        results.push(result)
-    }
-    //console.log(results)
+    const boxes = await connection.getBoxes();
+    //console.log(boxes);
     await connection.end();
-    return results;
+    return boxes;
 }
-            
+
+ 
+async function listMessages(box = "INBOX", sinceDaysAgo = 2){
+    try {
+        const connection = await imaps.connect(config);
+        await connection.openBox(box);
+        var delay = 24 * 3600 * 1000;
+        var yesterday = new Date();
+        yesterday.setTime(Date.now() - delay*sinceDaysAgo);
+        yesterday = yesterday.toISOString();
+        var searchCriteria = [["SINCE", yesterday]];
+        var searchCriteria = [["SINCE", yesterday]];
+        var fetchOptions = {
+            struct: true,
+            bodies: ['HEADER', 'TEXT', ''], // mail header, mail body, mail header and body
+            markSeen: false
+        };
+        const messages = await connection.search(searchCriteria, fetchOptions);
+        console.log('search results: '+messages.length);
+        const results = [];
+        for(let message of messages){
+            console.log("------ start -------")
+            const result = {}
+            //console.log(message.attributes.struct)
+            //console.log(message)
+            // read header
+            const header = message.parts.find(part => part.which === 'HEADER');
+            //console.log(header)
+            result.Subject = header.body.subject
+            result.Date = header.body.date
+            result.From = header.body.from
+            result.ContentType = header.body["content-type"][0]
+            console.log(result.Subject)
+            // read text
+            const text = message.parts.find(part => part.which === 'TEXT');
+            //console.log(text)
+            const all = message.parts.find(part => part.which === '' )
+            // parse mail
+            // https://github.com/chadxz/imap-simple#usage-of-mailparser-in-combination-with-imap-simple
+            //const mail = await simpleParser(`Imap-Id: ${message.attributes.uid}\r\n${all.body}`, { Iconv });
+            const mail = await simpleParser(`Imap-Id: ${message.attributes.uid}\r\n${all.body}`);
+            //console.log(Object.keys(mail));
+            //console.log(mail)
+            //if(mail.text) { console.log(mail.text.slice(0,50)) }
+            result.Body = mail.text
+            results.push(result)
+        }
+        //console.log(results)
+        await connection.end();
+        return results;
+    } catch(err) {
+        console.log(err)
+        return {error:err.ToString()}
+    }
+
+}
+
+
+
             //https://qiita.com/oharato/items/35add79f406c384af780
             //https://www.npmjs.com/package/imap-simple
             //https://www.npmtrends.com/imap-vs-imap-simple-vs-inbox-vs-node-mailer-vs-nodemailer
@@ -80,6 +98,7 @@ async function listMessages(){
 // --- MAIN
 if (require.main === module) { 
     console.log('called directly'); 
+    listBoxes();
     listMessages()
     .then(results => {
         results = results.map(e => { e.Body = e.Body.slice(0,1000); return e;});
@@ -91,3 +110,4 @@ if (require.main === module) {
 
 // --- EXPORT
 exports.listMessages = listMessages;
+exports.listBoxes = listBoxes;

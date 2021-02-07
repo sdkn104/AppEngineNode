@@ -3,6 +3,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const iconv = require('iconv-lite');
+const session = require("express-session")
 
 const Private = require('./Private.js')
 const myGmail = require('./myGmail.js')
@@ -40,7 +41,16 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use('/static', express.static('static'));
-
+app.use(session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie:{
+        httpOnly: true,
+        secure: false,
+        maxage: 1000 * 60 * 30 // in msec.
+    }
+})); 
 
 function loginCheck(req){
     const html = "<form method='POST'>User Name<input type='text' name=username><br>Password<input type='password' name='password'><br><input type='submit'></form>"
@@ -89,6 +99,38 @@ app.all('/ymail_list', (req, res) => {
     .catch(err => {
         res.status(500).send(err.toString()).end();
     });
+});
+
+app.all('/ymail', (req, res) => {
+    try {
+        console.log(req.body)
+        const command = req.body.command;
+        if( command != "login" && ! req.session.login ) {
+            res.status(200).send({error:"not login"}).end();
+            return;
+        }
+        if( command === "login" ){
+            if( req.body.username !== Private.app_username || req.body.password !== Private.app_password) {
+                throw "wrong user name or password";
+            }
+            req.session.login = true;
+            req.session.username = req.body.username;
+            res.status(200).send({username:req.body.username}).end();
+        } else if( command === "open" ){
+            myYahooMail.listBoxes()
+            .then(folders =>{
+                res.status(200).send(folders).end();
+            })
+        } else if( command === "list-messages"){
+            myYahooMail.listMessages(req.body.box, req.body.sinceDaysAgo)
+            .then(messageList => {
+                res.status(200).send(messageList).end();
+            })
+        }
+    } catch(err) {
+        console.log("catch: "+err)
+        res.status(200).send({error: err.stack || err.toString()}).end();
+    }
 });
 
 app.all('/ftp_nas_api', (req, res) => {
