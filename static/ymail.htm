@@ -14,7 +14,7 @@
 </head>
 <body> 
     <div id="app">
-        <login-bar action="/ymail"></login-bar>
+        <login-bar action="/login"></login-bar>
         <input type="button" value="open" v-on:click="onclick_open"><br>
         Since <input type="text" v-model="sinceDaysAgo"> days ago<br>
         <div style="color:red;">{{message}}</div>
@@ -30,6 +30,7 @@
                 </div>
             </div>
         </div>
+        
         <popup-box v-bind:popup-display.sync="enablePopupBox">
             {{currentMessage && currentMessage.Subject}}<br>
             {{currentMessage && currentMessage.From}}<br>

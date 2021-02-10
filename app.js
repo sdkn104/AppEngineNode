@@ -100,19 +100,12 @@ app.get('/gmail_list', (req, res) => {
 app.post('/ymail', (req, res) => {
     try {
         console.log(req.body)
-        const command = req.body.command;
-        if( command != "login" && ! req.session.login ) {
+        if( ! req.session.login ) {
             res.status(200).send({error:"not login"}).end();
             return;
         }
-        if( command === "login" ){
-            if( req.body.username !== Private.app_username || req.body.password !== Private.app_password) {
-                throw "wrong user name or password";
-            }
-            req.session.login = true;
-            req.session.username = req.body.username;
-            res.status(200).send({username:req.body.username}).end();
-        } else if( command === "open" ){
+        const command = req.body.command;
+        if( command === "open" ){
             myYahooMail.listBoxes()
             .then(folders =>{
                 res.status(200).send(folders).end();
@@ -133,19 +126,12 @@ app.post('/ymail', (req, res) => {
 app.post('/ftp_nas_api', (req, res) => {
     try {
         console.log(req.body)
-        const command = req.body.command;
-        if( command != "login" && ! req.session.login ) {
+        if( ! req.session.login ) {
             res.status(200).send({error:"not login"}).end();
             return;
         }
-        if( command === "login" ){
-            if( req.body.username !== Private.app_username || req.body.password !== Private.app_password) {
-                throw "wrong user name or password";
-            }
-            req.session.login = true;
-            req.session.username = req.body.username;
-            res.status(200).send({username:req.body.username}).end();
-        } else if( command === "open" ){
+        const command = req.body.command;
+        if( command === "open" ){
             let greeting;
             ftpClientNAS = new ftpClient();
             ftpClientNAS.on('greeting', function(msg) {
