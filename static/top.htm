@@ -7,34 +7,36 @@
     <!-- bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">    
     <style>
-        td { padding: 0 2em; }
     </style>    
 </head>
-<body><div id="app">
-    <login-bar action="/ftp_nas_api"></login-bar>
-
-    <input type="button" value="open" v-on:click="onclick_open"><br>
-    <input type="button" value="cd" v-on:click="onclick_cd"><input type="text" v-model="input_cd"><br>
-    <input type="button" value="download" v-on:click="onclick_download"><input type="text" v-model="input_download"><br>
-    <input type="button" value="bye" v-on:click="onclick_bye"><br>
-
-    <div id="cwd">{{cwd}}</div>
-    <div><pre id="message" style="color:red;">{{message}}</pre></div>
-    <div>
-        <table>
-            <tr v-for="file in files">
-                <td>{{file.type}}</td> 
-                <td><a href="#" class="dir" v-on:click="onclick_name(file);">{{file.name}}</a></td>
-                <td>{{file.size}}</td>
-                <td>{{file.date}}</td>
-            </tr> 
-        </table>
+<body> 
+    <div id="app">
+        <login-bar action="/login"></login-bar>
+        <h4>Hello, world! I am App Engine by NodeJS</h4>
+        <div v-if="username" style="padding: 5px">
+            <a href="/gmail_list">gmail</a><br>
+            <a href="/static/ymail.htm">ymail</a><br>
+            <a href="/static/ftp_nas_console.htm">ftp NAS</a><br>
+        </div>
     </div>
- 
-</div>
     <!-- vue -->
     <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
-    <script type="module" src="/static/ftp_nas_console.js"></script>
+    <script type="module">
+        import {loginBar} from "/static/components/loginBar.js" 
+        import {fetch_json} from "/static/common.js"
+        var app = new Vue({
+            el: '#app',
+            data: {
+                message: "",
+                username: "x",
+            },
+            methods: {
+            },
+            components: {
+                loginBar: loginBar,
+            }
+            });
+    </script>
     <!-- bootstrap -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>

@@ -52,27 +52,39 @@ app.use(session({
     }
 })); 
 
-function loginCheck(req){
-    const html = "<form method='POST'>User Name<input type='text' name=username><br>Password<input type='password' name='password'><br><input type='submit'></form>"
-    console.log(req.method)
-    if( req.method === "POST" && req.body.username === Private.app_username && req.body.password === Private.app_password) {
-        return null; // login ok
-    } else {
-        return html; // login form
-    }
-}
-
-
+// Top page
 app.get('/', (req, res) => {
-    res.status(200).send('Hello, world! I am App Engine by NodeJS').end();
+    res.redirect('/static/top.htm');
 });
 
-app.all('/gmail_list', (req, res) => {
-    let loginForm  = loginCheck(req);
-    if(loginForm) {
-        res.status(200).send(loginForm).end();
+// login API
+app.post('/login', (req, res) => {
+    try {
+        console.log(req.body)
+        const command = req.body.command;
+        //if( command === "login" ){
+            if( req.body.username !== Private.app_username || req.body.password !== Private.app_password) {
+                throw "wrong user name or password";
+            }
+            req.session.login = true;
+            req.session.username = req.body.username;
+            res.status(200).send({username:req.body.username}).end();
+        //}
+    } catch(err) {
+        console.log("catch: "+err)
+        res.status(200).send({error: err.stack || err.toString()}).end();
+    }
+});
+
+// Gmail page
+app.get('/gmail_list', (req, res) => {
+    console.log(req.body)
+    // login check
+    if( ! req.session.login ) {
+        res.status(200).send("Error: not login").end();
         return;
     }
+
     myGmail.listMessages()
     .then(msgList => {
         msgList = msgList.map(e => {e.Body = e.Body.slice(0,1000); return e;});
@@ -84,24 +96,8 @@ app.all('/gmail_list', (req, res) => {
     });
 });
 
-app.all('/ymail_list', (req, res) => {
-    let loginForm  = loginCheck(req);
-    if(loginForm) {
-        res.status(200).send(loginForm).end();
-        return;
-    }
-    myYahooMail.listMessages()
-    .then(msgList => {
-        msgList = msgList.map(e => {e.Body = e.Body.slice(0,1000); return e;});
-        const html = JSON.stringify(msgList, null, 4).replace(/\n/g, "<br>\n");
-        res.status(200).send(html).end();
-    })
-    .catch(err => {
-        res.status(500).send(err.toString()).end();
-    });
-});
-
-app.all('/ymail', (req, res) => {
+// Yahoo Mail API
+app.post('/ymail', (req, res) => {
     try {
         console.log(req.body)
         const command = req.body.command;
@@ -133,15 +129,24 @@ app.all('/ymail', (req, res) => {
     }
 });
 
-app.all('/ftp_nas_api', (req, res) => {
+// FTP MAS API
+app.post('/ftp_nas_api', (req, res) => {
     try {
         console.log(req.body)
         const command = req.body.command;
-        if( command === "open" ){
-            let greeting;
+        if( command != "login" && ! req.session.login ) {
+            res.status(200).send({error:"not login"}).end();
+            return;
+        }
+        if( command === "login" ){
             if( req.body.username !== Private.app_username || req.body.password !== Private.app_password) {
                 throw "wrong user name or password";
             }
+            req.session.login = true;
+            req.session.username = req.body.username;
+            res.status(200).send({username:req.body.username}).end();
+        } else if( command === "open" ){
+            let greeting;
             ftpClientNAS = new ftpClient();
             ftpClientNAS.on('greeting', function(msg) {
                 greeting = msg;
@@ -214,6 +219,8 @@ app.all('/ftp_nas_api', (req, res) => {
     }
 });
 
+
+// TRANSFER
 app.get('/*', (req, resp) => {
     //let body = req.protocol + '://' + req.headers.host + req.url;
     let url = "http://35.203.132.149:80"  + req.url;

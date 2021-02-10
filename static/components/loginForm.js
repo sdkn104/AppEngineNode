@@ -26,9 +26,10 @@ export const loginForm = {
   template: `
     <div class="modal" v-bind:style="modalStyle" v-if="formDisplay">
         <div class="modal-content" v-bind:style="modalContentStyle">
+            <div style="color:red"><slot></slot></div>
             <input type="text" placeholder="Enter Username" class="form-control" v-model="loginFormUsername">
             <input type="password" placeholder="Enter Password" class="form-control" v-model="loginFormPassword">
-            <button class="btn btn-lg btn-primary btn-block" type="button" v-on:click="$emit('click_login', {username:loginFormUsername, password:loginFormPassword})">Login</button>
+            <button class="btn btn-lg btn-primary btn-block" type="button" v-on:click="formDisplay=false; $emit('click_login', {username:loginFormUsername, password:loginFormPassword})">Login</button>
         </div>
     </div>
   `,

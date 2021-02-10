@@ -14,10 +14,7 @@
 </head>
 <body> 
     <div id="app">
-        <div>
-            <input type="button" value="login" v-on:click="onclick_login">
-            <span> {{username}}</span>
-        </div>
+        <login-bar action="/ymail"></login-bar>
         <input type="button" value="open" v-on:click="onclick_open"><br>
         Since <input type="text" v-model="sinceDaysAgo"> days ago<br>
         <div style="color:red;">{{message}}</div>
@@ -33,13 +30,12 @@
                 </div>
             </div>
         </div>
-        <login-form v-on:click_login="onclick_loginFormOK" v-bind:form-display="enableLoginForm"></login-form>
-        <popup-box v-bind:popup-display="enablePopupBox">
+        <popup-box v-bind:popup-display.sync="enablePopupBox">
             {{currentMessage && currentMessage.Subject}}<br>
             {{currentMessage && currentMessage.From}}<br>
             {{currentMessage && currentMessage.Date}}<br>
             <hr>
-            <pre>{{currentMessage && currentMessage.Body}}</pre>
+            <div v-html="currentMessage && currentMessage.Body.replace(/\n/g, '<br>')"></div>
         </popup-box>
     </div>
     <!-- vue -->
