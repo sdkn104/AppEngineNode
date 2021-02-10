@@ -4,7 +4,7 @@ export const loginForm = {
   data: function() {
       return {
         loginFormUsername:"sadakane",
-        loginFormPassword:"gorosan3",
+        loginFormPassword:"",
         modalStyle: {
             display: "block",
             position: "fixed",
