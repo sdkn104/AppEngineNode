@@ -18,7 +18,6 @@ var app = new Vue({
   },
   methods: {
     onclick_login: onclick_login,
-    onclick_open: onclick_open,
     onclick_box: onclick_box,
     onclick_msg: onclick_msg,
   },
@@ -29,10 +28,6 @@ var app = new Vue({
 });
 
 
-
-function onclick_login() {
-    app.enableLoginForm = true;
-};
 
 
 function onclick_open() {

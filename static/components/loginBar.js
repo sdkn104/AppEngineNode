@@ -33,13 +33,29 @@ export const loginBar = {
         });
         this.enableLoginForm = false
         this.loginFormPassword = ""
+    },
+    update_login: function() {
+        console.log("check")
+        fetch_json(this.action, {
+                command: "check", 
+        })
+        .then(response => {
+            this.username = response.username;
+        })
+        .catch(err  => {
+            this.loginMessage = err.stack || err.toString();
+        });
     }
+  },
+  mounted: function(){
+    this.update_login();
   },
   components: {
       loginForm: loginForm,
   },
   template: `
         <div style="background-color:lightgray; padding:5px;">
+            <a href="./top.htm">Home</a>　　　
             <input type="button" value="login" v-on:click="onclick_login">
             <span> {{username}}</span>
             <login-form v-on:click_login="onclick_loginFormOK" v-bind:form-display.sync="enableLoginForm">{{loginMessage}}</login-form>

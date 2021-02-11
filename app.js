@@ -60,40 +60,43 @@ app.get('/', (req, res) => {
 // login API
 app.post('/login', (req, res) => {
     try {
-        console.log(req.body)
+        //console.log(req.body)
         const command = req.body.command;
-        //if( command === "login" ){
+        if( command === "login" ){
             if( req.body.username !== Private.app_username || req.body.password !== Private.app_password) {
                 throw "wrong user name or password";
             }
             req.session.login = true;
             req.session.username = req.body.username;
             res.status(200).send({username:req.body.username}).end();
-        //}
+        } else if( command == "check") {
+            res.status(200).send({username:req.session.username}).end();
+        }
     } catch(err) {
         console.log("catch: "+err)
         res.status(200).send({error: err.stack || err.toString()}).end();
     }
 });
 
-// Gmail page
-app.get('/gmail_list', (req, res) => {
-    console.log(req.body)
-    // login check
-    if( ! req.session.login ) {
-        res.status(200).send("Error: not login").end();
-        return;
+// GMail API
+app.post('/gmail', (req, res) => {
+    try {
+        console.log(req.body)
+        if( ! req.session.login ) {
+            res.status(200).send({error:"not login"}).end();
+            return;
+        }
+        const command = req.body.command;
+        if( command === "list-messages"){
+            myGmail.listMessages(req.body.messageCount)
+            .then(messageList => {
+                res.status(200).send(messageList).end();
+            })
+        }
+    } catch(err) {
+        console.log("catch: "+err)
+        res.status(200).send({error: err.stack || err.toString()}).end();
     }
-
-    myGmail.listMessages()
-    .then(msgList => {
-        msgList = msgList.map(e => {e.Body = e.Body.slice(0,1000); return e;});
-        const html = JSON.stringify(msgList, null, 4).replace(/\n/g, "<br>\n");
-        res.status(200).send(html).end();
-    })
-    .catch(err => {
-        res.status(500).send(err.toString()).end();
-    });
 });
 
 // Yahoo Mail API

@@ -81,13 +81,13 @@ function getNewToken(oAuth2Client, callback) {
 // ===== BODY ======================================================
 
 
-async function listMessages() {
+async function listMessages(messageCount = 10) {
     const oAuth2Client = await getAuthrizedClient();
     const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
 
     const res = await gmail.users.messages.list({
             userId: 'me',
-            maxResults: 20,
+            maxResults: messageCount,
     })
     .catch((err) => {
         console.log('The API returned an error: ' + err);
