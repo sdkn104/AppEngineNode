@@ -8,7 +8,6 @@ const api_url = "/ymail";
 var app = new Vue({
   el: '#app',
   data: {
-    username:"",
     boxes:{},
     messageList:[],
     sinceDaysAgo:2,
@@ -17,7 +16,7 @@ var app = new Vue({
     message:"",
   },
   methods: {
-    onclick_login: onclick_login,
+    onclick_open: onclick_open,
     onclick_box: onclick_box,
     onclick_msg: onclick_msg,
   },
