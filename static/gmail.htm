@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">    
+    <style>
+        td { padding: 0 2em; }
+        .boxes { overflow-y:scroll; height:90%; }
+        .messageList { overflow-y:scroll; height:100%; }
+    </style>    
+</head>
+<body> 
+    <div id="app">
+        <login-bar action="/login"></login-bar>
+        <select v-model="userAccountName">
+            <option value="sdkn104home" selected>sdkn104home@gmail.com</option>
+            <option value="sdkn104">sdkn104@gmail.com</option>
+        </select>
+        <input type="button" value="open" v-on:click="onclick_open"><br>
+        Get <input type="text" v-model="messageCount"> messages<br>
+        <div style="color:red;">{{message}}</div>
+        <div style="display:flex;">
+            <div class="boxes">
+                <div v-for="box in Object.keys(boxes)" >
+                    <a href="#" v-on:click="onclick_box(box);">{{box}}</a>
+                </div>
+            </div>
+            <div class="messageList">
+                <div v-for="msg in messageList" >
+                    <a href="#" v-on:click="onclick_msg(msg);">{{msg.Date}} {{msg.Subject}}</a>
+                </div>
+            </div>
+        </div>
+        
+        <popup-box v-bind:popup-display.sync="enablePopupBox">
+            {{currentMessage && currentMessage.Subject}}<br>
+            {{currentMessage && currentMessage.From}}<br>
+            {{currentMessage && currentMessage.Date}}<br>
+            <hr>
+            <div v-html="currentMessage && currentMessage.Body.replace(/\n/g, '<br>')"></div>
+        </popup-box>
+    </div>
+    <!-- vue -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script type="module" src="/static/gmail.js"></script>
+    <!-- bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+</body>
+</html>
