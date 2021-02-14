@@ -78,7 +78,7 @@ app.post('/login', (req, res) => {
     }
 });
 
-// GMail API
+// Gmail API
 app.post('/gmail', (req, res) => {
     try {
         console.log(req.body)
@@ -88,7 +88,7 @@ app.post('/gmail', (req, res) => {
         }
         const command = req.body.command;
         if( command === "list-messages"){
-            myGmail.listMessages(req.body.messageCount)
+            myGmail.listMessages(req.body.userAccountName, req.body.messageCount)
             .then(messageList => {
                 res.status(200).send(messageList).end();
             })

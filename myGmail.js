@@ -4,27 +4,40 @@ const {google} = require('googleapis');
 
 // ===== AUTHENTICATION ======================================================
 
-// If modifying these scopes, delete CLIENT_TOKEN_FILE.
-const SCOPES = ['https://www.googleapis.com/auth/gmail.send','https://www.googleapis.com/auth/gmail.readonly'];
-// The file token.json stores the user's access and refresh tokens, and is
-// created automatically when the authorization flow completes for the first
-// time.
-const CLIENT_SECRET_FILE = 'credentials/client_secret.json'
-const CLIENT_TOKEN_FILE = "credentials/gmail-token.json"
+const USER_CREDENTIALS = {
+    sdkn104home: {
+        // If modifying these scopes, delete CLIENT_TOKEN_FILE.
+        SCOPES : ['https://www.googleapis.com/auth/gmail.send','https://www.googleapis.com/auth/gmail.readonly'],
+        // The file token.json stores the user's access and refresh tokens, and is
+        // created automatically when the authorization flow completes for the first
+        // time.
+        CLIENT_SECRET_FILE : 'credentials/client_secret.json',
+        CLIENT_TOKEN_FILE : "credentials/gmail-token.json",
+    },
+    sdkn104: {
+        // If modifying these scopes, delete CLIENT_TOKEN_FILE.
+        SCOPES : ['https://www.googleapis.com/auth/gmail.send','https://www.googleapis.com/auth/gmail.readonly'],
+        // The file token.json stores the user's access and refresh tokens, and is
+        // created automatically when the authorization flow completes for the first
+        // time.
+        CLIENT_SECRET_FILE : 'credentials/client_secret_sdkn104@gmail.com.json',
+        CLIENT_TOKEN_FILE : "credentials/gmail-token_sdkn104@gmail.com.json",
+    }
+}
 
 // Get Authorized Client and return Promise
-function getAuthrizedClient() {
+function getAuthrizedClient(user = "sdkn104home") {
     return new Promise((resolve, reject) => {
-        loadClientSecrets(resolve);
+        loadClientSecrets(user, resolve);
     });
 }
 
 // Load client secrets from a local file.
-function loadClientSecrets(callback) {
-    fs.readFile(CLIENT_SECRET_FILE, (err, content) => {
+function loadClientSecrets(user, callback) {
+    fs.readFile(USER_CREDENTIALS[user].CLIENT_SECRET_FILE, (err, content) => {
         if (err) return console.log('Error loading client secret file:', err);
         // Authorize a client with credentials, then call the Gmail API.
-        authorize(JSON.parse(content), callback);
+        authorize(user, JSON.parse(content), callback);
     });
 }
 
@@ -34,14 +47,14 @@ function loadClientSecrets(callback) {
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize(credentials, callback) {
+function authorize(user, credentials, callback) {
   const {client_secret, client_id, redirect_uris} = credentials.installed;
   const oAuth2Client = new google.auth.OAuth2(
       client_id, client_secret, redirect_uris[0]);
 
   // Check if we have previously stored a token.
-  fs.readFile(CLIENT_TOKEN_FILE, (err, token) => {
-    if (err) return getNewToken(oAuth2Client, callback);
+  fs.readFile(USER_CREDENTIALS[user].CLIENT_TOKEN_FILE, (err, token) => {
+    if (err) return getNewToken(user, oAuth2Client, callback);
     oAuth2Client.setCredentials(JSON.parse(token));
     callback(oAuth2Client);
   });
@@ -53,7 +66,7 @@ function authorize(credentials, callback) {
  * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
  * @param {getEventsCallback} callback The callback for the authorized client.
  */
-function getNewToken(oAuth2Client, callback) {
+function getNewToken(user, oAuth2Client, callback) {
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
@@ -69,9 +82,9 @@ function getNewToken(oAuth2Client, callback) {
       if (err) return console.error('Error retrieving access token', err);
       oAuth2Client.setCredentials(token);
       // Store the token to disk for later program executions
-      fs.writeFile(CLIENT_TOKEN_FILE, JSON.stringify(token), (err) => {
+      fs.writeFile(USER_CREDENTIALS[user].CLIENT_TOKEN_FILE, JSON.stringify(token), (err) => {
         if (err) return console.error(err);
-        console.log('Token stored to', CLIENT_TOKEN_FILE);
+        console.log('Token stored to', USER_CREDENTIALS[user].CLIENT_TOKEN_FILE);
       });
       callback(oAuth2Client);
     });
@@ -81,8 +94,8 @@ function getNewToken(oAuth2Client, callback) {
 // ===== BODY ======================================================
 
 
-async function listMessages(messageCount = 10) {
-    const oAuth2Client = await getAuthrizedClient();
+async function listMessages(user = "sdkn104home", messageCount = 10) {
+    const oAuth2Client = await getAuthrizedClient(user);
     const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
 
     const res = await gmail.users.messages.list({
@@ -126,7 +139,7 @@ async function listMessages(messageCount = 10) {
 // --- MAIN
 if (require.main === module) { 
     console.log('called directly'); 
-    listMessages()
+    listMessages("sdkn104")
     .then(results => {
         results = results.map(e => {e.Body = e.Body.slice(0,500); return e;})
         console.log(results)
