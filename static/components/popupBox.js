@@ -18,9 +18,9 @@ export const popupBox = {
         },
         modalContentStyle: {
             backgroundColor: "white",
-            width: "90%",
-            height: "90%",
-            margin: "5px auto auto auto",
+            width: "95%",
+            height: "95%",
+            margin: "auto",
         }
       };
   },

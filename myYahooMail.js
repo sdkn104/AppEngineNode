@@ -77,6 +77,7 @@ async function listMessages(box = "INBOX", sinceDaysAgo = 2){
             //console.log(mail)
             //if(mail.text) { console.log(mail.text.slice(0,50)) }
             result.Body = mail.text
+            result.Html = mail.html
             results.push(result)
         }
         //console.log(results)

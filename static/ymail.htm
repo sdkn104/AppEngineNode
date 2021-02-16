@@ -36,7 +36,8 @@
             {{currentMessage && currentMessage.From}}<br>
             {{currentMessage && currentMessage.Date}}<br>
             <hr>
-            <div v-html="currentMessage && currentMessage.Body.replace(/\n/g, '<br>')"></div>
+            <div v-if="currentMessage && currentMessage.Html" v-html="currentMessage.Html"></div>
+            <div v-else-if="currentMessage" v-html="currentMessage.Body.replace(/\n/g, '<br>')"></div>
         </popup-box>
     </div>
     <!-- vue -->

@@ -51,6 +51,7 @@ function onclick_box(box){
     app.message = "processing..."
     fetch_json(api_url, {command:"list-messages", box:box, sinceDaysAgo:app.sinceDaysAgo})
     .then(messageList => {
+        console.log(messageList)
         app.messageList = messageList;
         if( messageList.length === 0 ) {
             app.message = "no message"
