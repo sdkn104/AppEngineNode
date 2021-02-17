@@ -18,6 +18,7 @@ var app = new Vue({
   },
   methods: {
     onclick_open: onclick_open,
+    onclick_box: onclick_box,
     onclick_msg: onclick_msg,
   },
   components: {
@@ -27,14 +28,30 @@ var app = new Vue({
 });
 
 
+function onclick_open(){
+    app.messageList = [];
+    app.boxes = [];
+    app.message = "";
+    fetch_json(api_url, {
+            command: "open", 
+    })
+    .then(boxes => {
+        console.log(boxes)
+        app.boxes = boxes;
+    })
+    .catch(err  => {
+        app.message = err.stack || err.toString();
+    });
+}
 
-function onclick_open() {
+function onclick_box(box) {
     app.messageList = [];
     app.message = "processing..."
+    //console.log(box)
     fetch_json(api_url, {
         command:"list-messages", 
         userAccountName:app.userAccountName, 
-        box:null, 
+        labelId:box.id, 
         messageCount:app.messageCount
     })
     .then(messageList => {

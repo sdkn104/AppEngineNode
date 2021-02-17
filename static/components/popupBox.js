@@ -28,7 +28,7 @@ export const popupBox = {
     <div class="modal" v-bind:style="modalStyle" v-if="popupDisplay">
         <div class="modal-content" v-bind:style="modalContentStyle">
             <div style="width:100%; overflow-y:scroll; overflow-x:auto; padding:10px;"><slot></slot></div>
-            <button class="btn btn-lg btn-primary btn-block" type="button" v-on:click="popupDisplay=false;">Dismiss</button>
+            <button class="btn btn-lg btn-primary btn-block" type="button" v-on:click="$emit('click_dismiss')">Dismiss</button>
         </div>
     </div>
   `,

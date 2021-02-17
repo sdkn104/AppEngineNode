@@ -24,8 +24,8 @@
         <div style="color:red;">{{message}}</div>
         <div style="display:flex;">
             <div class="boxes">
-                <div v-for="box in Object.keys(boxes)" >
-                    <a href="#" v-on:click="onclick_box(box);">{{box}}</a>
+                <div v-for="box in boxes" >
+                    <a href="#" v-on:click="onclick_box(box);">{{box.name}}</a>
                 </div>
             </div>
             <div class="messageList">
@@ -35,7 +35,7 @@
             </div>
         </div>
         
-        <popup-box v-bind:popup-display.sync="enablePopupBox">
+        <popup-box v-bind:popup-display="enablePopupBox" v-on:click_dismiss="enablePopupBox = false">
             {{currentMessage && currentMessage.Subject}}<br>
             {{currentMessage && currentMessage.From}}<br>
             {{currentMessage && currentMessage.Date}}<br>

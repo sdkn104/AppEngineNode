@@ -87,12 +87,18 @@ app.post('/gmail', (req, res) => {
             return;
         }
         const command = req.body.command;
-        if( command === "list-messages"){
-            myGmail.listMessages(req.body.userAccountName, req.body.messageCount)
+        if( command === "open"){
+            myGmail.listLabels(req.body.userAccountName)
+            .then(boxList => {
+                res.status(200).send(boxList).end();
+            })
+        } else if( command === "list-messages"){
+            myGmail.listMessages(req.body.userAccountName, [req.body.labelId], req.body.messageCount)
             .then(messageList => {
                 res.status(200).send(messageList).end();
             })
         }
+
     } catch(err) {
         console.log("catch: "+err)
         res.status(200).send({error: err.stack || err.toString()}).end();

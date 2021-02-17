@@ -94,46 +94,79 @@ function getNewToken(user, oAuth2Client, callback) {
 // ===== BODY ======================================================
 
 
-async function listMessages(user = "sdkn104home", messageCount = 10) {
+async function listLabels(user = "sdkn104home") {
     const oAuth2Client = await getAuthrizedClient(user);
     const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
 
-    const res = await gmail.users.messages.list({
+    const res = await gmail.users.labels.list({
             userId: 'me',
-            maxResults: messageCount,
     })
     .catch((err) => {
         console.log('The API returned an error: ' + err);
     });
-    console.log(res.data.messages)    
-  
-    let results = [];
-    for(let msg of res.data.messages){   
-        const topid = msg.id;
-        //console.log(`- ${topid}`);
-        const message = await gmail.users.messages.get({userId:'me', id:topid});
-        const headers = message.data.payload.headers;
-        //console.log("-------------------------")
-        let result = {};
-        //console.log(headers)
-        result.Subject = headers.find(e => e.name.toLowerCase() === "subject").value;
-        result.From = headers.find(e => e.name.toLowerCase() === "from").value;
-        result.To = headers.find(e => e.name.toLowerCase() === "to").value;
-        result.Date = headers.find(e => e.name.toLowerCase() === "date").value;
-        //console.log(message.data.payload)
-        let base64mailBody;
-        if( message.data.payload.parts ){
-            base64mailBody = message.data.payload.parts[0].body.data; //parts[0]がテキスト、parts[1]がHTMLメールっぽい
-        } else {
-            base64mailBody = message.data.payload.body.data;
+    console.log(res.data.labels)    
+    return res.data.labels;
+}
+
+
+async function listMessages(user = "sdkn104home", labelIds = [], messageCount = 10) {
+    try {
+        const oAuth2Client = await getAuthrizedClient(user);
+        const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
+        //console.log(labelIds)
+        const res = await gmail.users.messages.list({
+                userId: 'me',
+                labelIds: labelIds,
+                maxResults: messageCount,
+        })
+        .catch((err) => {
+            console.log('The API returned an error: ' + err);
+        });
+        //console.log(res.data.messages)    
+        //console.log(res.data)    
+        if( !res.data.messages ) {
+            return [];
         }
-        const mailBody = Buffer.from(base64mailBody, 'base64').toString(); //メール本文はBase64になってるので変換
-        result.Body = mailBody;
-        console.log("Subject: "+result.Subject)
-        results.push(result)
+
+        let results = [];
+        for(let msg of res.data.messages){   
+            let result = {};
+            try {
+                const topid = msg.id;
+                //console.log(`- ${topid}`);
+                const message = await gmail.users.messages.get({userId:'me', id:topid});
+                const headers = message.data.payload.headers;
+                //console.log("-------------------------")
+                //console.log(headers)
+                result.Subject = headers.find(e => e.name.toLowerCase() === "subject").value;
+                result.From = headers.find(e => e.name.toLowerCase() === "from").value;
+                result.To = headers.find(e => e.name.toLowerCase() === "to").value;
+                result.Date = headers.find(e => e.name.toLowerCase() === "date").value;
+                //console.log(message.data.payload)
+                let base64mailBody;
+                //console.log(message.data.payload)
+                if( message.data.payload.parts ){
+                    //console.log(message.data.payload.parts[0].body)
+                    base64mailBody = message.data.payload.parts[0].body.data; //parts[0]がテキスト、parts[1]がHTMLメールっぽい
+                } else {
+                    base64mailBody = message.data.payload.body.data;
+                }
+                const mailBody = Buffer.from(base64mailBody, 'base64').toString(); //メール本文はBase64になってるので変換
+                result.Body = mailBody;
+                console.log("Subject: "+result.Subject)
+            } catch(err){
+                console.log(err.stack || err.toString())   
+                result.Body = result.Body + "\n\n---- Error Occur in reading this message -----\n" + (err.stack || err.toString())                             
+            } finally {
+                results.push(result)
+            }
+        }
+        //console.log(results);
+        return results;
+    } catch(err){
+        console.log(err)
+        return {error:err.stack || err.toString()}        
     }
-    //console.log(results);
-    return results;
 }
 
 // --- MAIN
@@ -144,9 +177,13 @@ if (require.main === module) {
         results = results.map(e => {e.Body = e.Body.slice(0,500); return e;})
         console.log(results)
     });
+    listLabels().then(labels => {
+        //console.log(labels)
+    });
 } else { 
     console.log('required as a module'); 
 }
 
 // --- EXPORT
 exports.listMessages = listMessages;
+exports.listLabels = listLabels;

@@ -23,7 +23,10 @@ var app = new Vue({
   components: {
       loginBar: loginBar,
       popupBox: popupBox,
-  }
+  },
+  //watch: {
+  //    enablePopupBox: function(val){ console.log("watch enablePopupBox:"+val)}
+  //}
 });
 
 
