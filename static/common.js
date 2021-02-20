@@ -19,7 +19,7 @@ export function fetch_json(url, message) {
         if( data.error ) {
             throw data.error;
         }    
-        console.log(data)
+        //console.log(data)
         return data;
     });
 }

@@ -79,26 +79,23 @@ app.post('/login', (req, res) => {
 });
 
 // Gmail API
-app.post('/gmail', (req, res) => {
+app.post('/gmail', async (req, res) => {
     try {
         console.log(req.body)
+        // login check
         if( ! req.session.login ) {
             res.status(200).send({error:"not login"}).end();
             return;
         }
+        // command handling
         const command = req.body.command;
-        if( command === "open"){
-            myGmail.listLabels(req.body.userAccountName)
-            .then(boxList => {
-                res.status(200).send(boxList).end();
-            })
+        if( command === "open" ){
+            const boxList = await myGmail.listLabels(req.body.userAccountName);
+            res.status(200).send(boxList).end();
         } else if( command === "list-messages"){
-            myGmail.listMessages(req.body.userAccountName, [req.body.labelId], req.body.messageCount)
-            .then(messageList => {
-                res.status(200).send(messageList).end();
-            })
+            const messageList = await myGmail.listMessages(req.body.userAccountName, [req.body.labelId], req.body.messageCount);
+            res.status(200).send(messageList).end();
         }
-
     } catch(err) {
         console.log("catch: "+err)
         res.status(200).send({error: err.stack || err.toString()}).end();
@@ -106,24 +103,22 @@ app.post('/gmail', (req, res) => {
 });
 
 // Yahoo Mail API
-app.post('/ymail', (req, res) => {
+app.post('/ymail', async (req, res) => {
     try {
         console.log(req.body)
+        // login check
         if( ! req.session.login ) {
             res.status(200).send({error:"not login"}).end();
             return;
         }
+        // command handling
         const command = req.body.command;
         if( command === "open" ){
-            myYahooMail.listBoxes()
-            .then(folders =>{
-                res.status(200).send(folders).end();
-            })
+            const folders = await myYahooMail.listBoxes();
+            res.status(200).send(folders).end();
         } else if( command === "list-messages"){
-            myYahooMail.listMessages(req.body.box, req.body.sinceDaysAgo)
-            .then(messageList => {
-                res.status(200).send(messageList).end();
-            })
+            const messageList = await myYahooMail.listMessages(req.body.box, req.body.sinceDaysAgo);
+            res.status(200).send(messageList).end();
         }
     } catch(err) {
         console.log("catch: "+err)
@@ -135,6 +130,7 @@ app.post('/ymail', (req, res) => {
 app.post('/ftp_nas_api', (req, res) => {
     try {
         console.log(req.body)
+        // login check
         if( ! req.session.login ) {
             res.status(200).send({error:"not login"}).end();
             return;

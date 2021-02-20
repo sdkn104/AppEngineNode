@@ -93,37 +93,33 @@ function getNewToken(user, oAuth2Client, callback) {
 
 // ===== BODY ======================================================
 
-
+// return label list or {error:xxx}
 async function listLabels(user = "sdkn104home") {
-    const oAuth2Client = await getAuthrizedClient(user);
-    const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
-
-    const res = await gmail.users.labels.list({
-            userId: 'me',
-    })
-    .catch((err) => {
-        console.log('The API returned an error: ' + err);
-    });
-    console.log(res.data.labels)    
-    return res.data.labels;
+    try {   
+        const oAuth2Client = await getAuthrizedClient(user);
+        const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
+        const res = await gmail.users.labels.list({
+                userId: 'me',
+        });
+        //console.log(res.data.labels)    
+        return res.data.labels;
+    } catch(err){
+        console.log(err)
+        return {error:err.stack || err.toString()}        
+    }
 }
 
-
+// return message list or {error:xxx}
 async function listMessages(user = "sdkn104home", labelIds = [], messageCount = 10) {
+    //console.log(labelIds)
     try {
         const oAuth2Client = await getAuthrizedClient(user);
         const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
-        //console.log(labelIds)
         const res = await gmail.users.messages.list({
                 userId: 'me',
                 labelIds: labelIds,
                 maxResults: messageCount,
-        })
-        .catch((err) => {
-            console.log('The API returned an error: ' + err);
         });
-        //console.log(res.data.messages)    
-        //console.log(res.data)    
         if( !res.data.messages ) {
             return [];
         }
@@ -142,18 +138,16 @@ async function listMessages(user = "sdkn104home", labelIds = [], messageCount = 
                 result.From = headers.find(e => e.name.toLowerCase() === "from").value;
                 result.To = headers.find(e => e.name.toLowerCase() === "to").value;
                 result.Date = headers.find(e => e.name.toLowerCase() === "date").value;
+                console.log("Subject: "+result.Subject)
                 //console.log(message.data.payload)
                 let base64mailBody;
-                //console.log(message.data.payload)
                 if( message.data.payload.parts ){
                     //console.log(message.data.payload.parts[0].body)
                     base64mailBody = message.data.payload.parts[0].body.data; //parts[0]がテキスト、parts[1]がHTMLメールっぽい
                 } else {
                     base64mailBody = message.data.payload.body.data;
                 }
-                const mailBody = Buffer.from(base64mailBody, 'base64').toString(); //メール本文はBase64になってるので変換
-                result.Body = mailBody;
-                console.log("Subject: "+result.Subject)
+                result.Body = Buffer.from(base64mailBody, 'base64').toString(); //メール本文はBase64になってるので変換
             } catch(err){
                 console.log(err.stack || err.toString())   
                 result.Body = result.Body + "\n\n---- Error Occur in reading this message -----\n" + (err.stack || err.toString())                             
