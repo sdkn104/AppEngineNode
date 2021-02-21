@@ -23,7 +23,8 @@
     "googleapis": "^39.2.0",
     "iconv": "^3.0.0",
     "imap-simple": "^5.0.0",
-    "mailparser": "^3.0.1"
+    "mailparser": "^3.0.1",
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "mocha": "^8.1.3",

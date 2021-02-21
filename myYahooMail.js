@@ -26,15 +26,20 @@ var config = {
 };
 
 async function listBoxes(){
-    const connection = await imaps.connect(config);
-    const boxes = await connection.getBoxes();
-    //console.log(boxes);
-    await connection.end();
-    return boxes;
+    try {
+        const connection = await imaps.connect(config);
+        const boxes = await connection.getBoxes();
+        console.log(boxes);
+        connection.end();
+        return boxes;
+    } catch(err) {
+        connection.end();
+        console.log(err)
+        return {error:err.ToString()}
+    }
 }
-
  
-async function listMessages(box = "INBOX", sinceDaysAgo = 2){
+async function listMessages(box = "INBOX", sinceDaysAgo = 2) {
     try {
         const connection = await imaps.connect(config);
         await connection.openBox(box);
@@ -81,30 +86,62 @@ async function listMessages(box = "INBOX", sinceDaysAgo = 2){
             results.push(result)
         }
         //console.log(results)
-        await connection.end();
+        connection.end();
         return results;
     } catch(err) {
+        connection.end();
         console.log(err)
         return {error:err.ToString()}
     }
+}
 
+
+async function moveAllMessages(fromBoxName, toBoxName){
+    try {
+        const connection = await imaps.connect(config);
+        await connection.openBox(fromBoxName);
+        var searchCriteria = ["ALL"];
+        var fetchOptions = {
+            bodies: ['HEADER'], // mail header
+            markSeen: false
+        };
+        const messages = await connection.search(searchCriteria, fetchOptions);
+        console.log('search results: '+messages.length);
+        const results = [];
+        for(let message of messages) {
+            const uid = message.attributes.uid;
+            //console.log("------ start ------- " + uid)
+            //const header = message.parts.find(part => part.which === 'HEADER');
+            //console.log(header.body.subject);
+            const r = await connection.moveMessage(uid, toBoxName);
+        }
+        connection.end();
+        return {success:true};
+    } catch(err) {
+        connection.end();
+        console.log(err)
+        return {error:err.ToString()}
+    }
 }
 
 
 
-            //https://qiita.com/oharato/items/35add79f406c384af780
-            //https://www.npmjs.com/package/imap-simple
-            //https://www.npmtrends.com/imap-vs-imap-simple-vs-inbox-vs-node-mailer-vs-nodemailer
+//https://qiita.com/oharato/items/35add79f406c384af780
+//https://www.npmjs.com/package/imap-simple
+//https://www.npmtrends.com/imap-vs-imap-simple-vs-inbox-vs-node-mailer-vs-nodemailer
             
 // --- MAIN
 if (require.main === module) { 
     console.log('called directly'); 
-    listBoxes();
+    moveAllMessages();
+    //listBoxes();
+    /*
     listMessages()
     .then(results => {
         results = results.map(e => { e.Body = e.Body.slice(0,1000); return e;});
         console.log(results)
-    });
+    })
+    */
 } else { 
     console.log('required as a module'); 
 }
@@ -112,3 +149,4 @@ if (require.main === module) {
 // --- EXPORT
 exports.listMessages = listMessages;
 exports.listBoxes = listBoxes;
+exports.moveAllMessages = moveAllMessages;

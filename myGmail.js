@@ -93,6 +93,47 @@ function getNewToken(user, oAuth2Client, callback) {
 
 // ===== BODY ======================================================
 
+// Create Mail
+function createMail(params) {
+    params.subject = new Buffer.from(params.subject).toString("base64"); //日本語対応
+    const str = [
+        `Content-Type: text/plain; charset=\"UTF-8\"\n`,
+        `MIME-Version: 1.0\n`,
+        `Content-Transfer-Encoding: 7bit\n`,
+        `to: ${params.to} \n`,
+        `from: ${params.from} \n`,
+        `subject: =?UTF-8?B?${params.subject}?= \n\n`,
+        params.message
+    ].join('');
+    return Buffer.from(str).toString("base64").replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+// Send Mail
+async function sendMail(user = "sdkn104home", to, subject, message) {
+    try {
+        const oAuth2Client = await getAuthrizedClient(user);
+        const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
+        const userProfile = await gmail.users.getProfile({userId:"me"});
+        const myEmailAddress = userProfile.data.emailAddress;
+        const raw = createMail({to:to, from:myEmailAddress, subject:subject, message:message});
+        const sentMsg = await gmail.users.messages.send({
+            userId: "me",
+            requestBody: {
+                raw,
+            },
+        });
+        return {message:sentMsg};
+    } catch(err){
+        console.log(err)
+        return {error:err.stack || err.toString()}        
+    }
+}
+
+// Send Alert Mail
+function sendAlertMail(subject, message_text) {
+    sendMail("sdkn104home", "sdkn104@yahoo.co.jp;sdkn104@gmail.com", subject, message_text)
+}
+
 // return label list or {error:xxx}
 async function listLabels(user = "sdkn104home") {
     try {   
@@ -166,6 +207,9 @@ async function listMessages(user = "sdkn104home", labelIds = [], messageCount = 
 // --- MAIN
 if (require.main === module) { 
     console.log('called directly'); 
+    sendMail("sdkn104home", "sdkn104@yahoo.co.jp", "test", "testbody")
+    sendAlertMail("subj", "message...")
+    return;
     listMessages("sdkn104")
     .then(results => {
         results = results.map(e => {e.Body = e.Body.slice(0,500); return e;})
@@ -181,3 +225,5 @@ if (require.main === module) {
 // --- EXPORT
 exports.listMessages = listMessages;
 exports.listLabels = listLabels;
+exports.sendMail = sendMail;
+exports.sendAlertMail = sendAlertMail;

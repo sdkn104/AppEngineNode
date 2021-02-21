@@ -4,6 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const iconv = require('iconv-lite');
 const session = require("express-session")
+const request = require('request');
 
 const Private = require('./Private.js')
 const myGmail = require('./myGmail.js')
@@ -206,6 +207,37 @@ app.post('/ftp_nas_api', (req, res) => {
         }
     } catch(err){
         console.log("catch: "+err)
+        res.status(200).send({error: err.stack || err.toString()}).end();
+    }
+});
+
+// clean Yahoo Mail (triggered by GAE cron)
+app.get('/cleanYahooMail', async (req, res) => {
+    const r = await myYahooMail.moveAllMessages("Trash", "00ごみ箱");
+    res.status(200).send(r).end();        
+});
+
+// Check alive of Web server on GCE
+app.get('/checkAliveOfWebOnGCE', async (req, res) => {
+    try {
+        const url = "http://35.203.132.149:80/"+Private.project_app;
+        request.get(url, {timeout:5000}, (err, resp, body) => {
+            if(err) {
+                myGmail.sendAlertMail("Alert Mail: server on GCE maybe down",
+                                    "Web server on GCE not respond. I am on AppEngine.")
+                res.status(200).send({error: err.stack || err.toString()}).end();
+                return;
+            }
+            if( resp.statusCode > 299 ) {
+                myGmail.sendAlertMail("Alert Mail: server on GCE down",
+                                    "Web server on GCE not respond. I am on AppEngine.")
+                res.status(200).send("Checking alive of GCE Web server... NG.").end();        
+            } else {
+                res.status(200).send("Checking alive of GCE Web server... OK.").end();   
+            }
+        });
+    } catch(err) {
+        myGmail.sendAlertMail("Alert Mail: error", "Error in checkAliveOfWebOnGCE() on AppEngine:\n"+err.stack)
         res.status(200).send({error: err.stack || err.toString()}).end();
     }
 });

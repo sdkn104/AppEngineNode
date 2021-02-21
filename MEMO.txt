@@ -11,4 +11,5 @@
    -> web server起動
 　　-> Cloud Shell ツールバーの [ウェブでプレビュー] ウェブでプレビュー アイコンをクリックするとWEBブラウザで表示
 ■Deploy
-% gcloud app deploy
+% gcloud app deploy [app.yaml]
+% gcloud app deploy cron.yaml
