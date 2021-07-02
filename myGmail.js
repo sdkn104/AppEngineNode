@@ -69,7 +69,7 @@ function authorize(user, credentials, callback) {
 function getNewToken(user, oAuth2Client, callback) {
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
-    scope: SCOPES,
+    scope: USER_CREDENTIALS[user].SCOPES,
   });
   console.log('Authorize this app by visiting this url:', authUrl);
   const rl = readline.createInterface({
@@ -209,7 +209,8 @@ if (require.main === module) {
     console.log('called directly'); 
     sendMail("sdkn104home", "sdkn104@yahoo.co.jp", "test", "testbody")
     sendAlertMail("subj", "message...")
-    return;
+    //return;
+    //listMessages("sdkn104home")
     listMessages("sdkn104")
     .then(results => {
         results = results.map(e => {e.Body = e.Body.slice(0,500); return e;})
