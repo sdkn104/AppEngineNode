@@ -1,10 +1,13 @@
 'use strict';
 
+const {Storage} = require('@google-cloud/storage');
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const iconv = require('iconv-lite');
 const session = require("express-session")
 const request = require('request');
+const axios = require('axios');
 
 const Private = require('./Private.js')
 const myGmail = require('./myGmail.js')
@@ -13,6 +16,7 @@ const myYahooMail = require('./myYahooMail.js')
 
 const ftpClient = require('ftp');
 var ftpClientNAS;
+    
 
 // Patch for ftpClient
 /*
@@ -242,6 +246,33 @@ app.get('/checkAliveOfWebOnGCE', async (req, res) => {
     }
 });
 
+// downloader
+app.get('/dl_top', async (req, res) => {
+    res.status(200).send("<form action='/dl_download'>URL:<input type='text' name=url><br>File Name:<input type='text' name=fn><br><input type=submit value='download'></form><br>");
+});
+
+app.get('/dl_download', async (req, res) => {
+    const url = req.query.url;
+    const fn = req.query.fn;
+    //console.log({url, fn});
+    const resp = await axios(url);
+
+    // Cloud Storage
+    const storage = new Storage();
+    const bucket = storage.bucket("dl_temp");
+    const blob = bucket.file(fn);
+    const blobStream = blob.createWriteStream({
+        //resumable: false,
+    });
+    //console.log(resp.data)
+    blobStream.on('error', err => {
+    });
+    blobStream.on('finish', () => {
+    });
+    blobStream.end(resp.data);
+    const link = "https://storage.googleapis.com/dl_temp/"+fn
+    res.status(200).send(`<a href='${link}'>download</a>`).end();    
+});
 
 // TRANSFER
 app.get('/*', (req, resp) => {
