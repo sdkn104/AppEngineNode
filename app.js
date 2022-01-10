@@ -266,8 +266,14 @@ app.get('/dl_download', async (req, res) => {
     });
     //console.log(resp.data)
     blobStream.on('error', err => {
+        console.error(err)
     });
     blobStream.on('finish', () => {
+        console.log('finish')
+        //var pathReference = storage.ref('dl_temp/'+fn);
+        //const link = pathReference.getDownloadURL()
+        //console.log(link)
+        //res.status(200).send(`<a href='${link}'>download</a>`).end();    
     });
     blobStream.end(resp.data);
     const link = "https://storage.googleapis.com/dl_temp/"+fn
