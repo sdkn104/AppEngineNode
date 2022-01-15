@@ -246,18 +246,33 @@ app.get('/checkAliveOfWebOnGCE', async (req, res) => {
     }
 });
 
-// downloader
+// indirect downloader
 app.get('/dl_top', async (req, res) => {
-    res.status(200).send("<form action='/dl_download'>URL:<input type='text' name=url><br>File Name:<input type='text' name=fn><br><input type=submit value='download'></form><br>");
+    res.status(200).send("<form action='/dl_download'>URL:<input type='text' name=url><br>File Name:<input type='text' name=fn title='optional'><br><input type=submit value='download'></form><br>");
 });
-
 app.get('/dl_download', async (req, res) => {
+    // get file
     const url = req.query.url;
-    const fn = req.query.fn;
-    //console.log({url, fn});
-    const resp = await axios(url);
+    const f = new URL(url).pathname.split('/').pop();
+    const fn = req.query.fn ? req.query.fn : f;
+    console.log({url, fn});
+    const resp = await axios.get(url, {
+        responseType: 'arraybuffer',
+        headers: {
+        }
+    });
+    //console.log(typeof resp.data)
 
-    // Cloud Storage
+    // download
+    //console.log(typeof resp.data)
+    //res.attachment(fn);
+    const fileName = encodeURIComponent(fn)
+    res.set({'Content-Disposition': `attachment; filename=${fileName}`})
+    res.status(200).send(resp.data).end();
+
+
+    /*
+    // save to Cloud Storage
     const storage = new Storage();
     const bucket = storage.bucket("dl_temp");
     const blob = bucket.file(fn);
@@ -276,8 +291,10 @@ app.get('/dl_download', async (req, res) => {
         //res.status(200).send(`<a href='${link}'>download</a>`).end();    
     });
     blobStream.end(resp.data);
-    const link = "https://storage.googleapis.com/dl_temp/"+fn
-    res.status(200).send(`<a href='${link}'>download</a>`).end();    
+    //const link = "https://storage.googleapis.com/dl_temp/"+fn
+    //res.status(200).send(`<a href='${link}'>download</a>`).end();    
+    */
+
 });
 
 // TRANSFER
