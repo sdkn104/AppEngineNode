@@ -95,6 +95,20 @@ async function listMessages(box = "INBOX", sinceDaysAgo = 2) {
     }
 }
 
+async function deleteMessage(uid) {
+    try {
+        const connection = await imaps.connect(config);
+        const result = await connection.deleteMessage(uid);
+        console.log(result)
+        connection.end();
+        return result;
+    } catch(err) {
+        connection.end();
+        console.log(err)
+        return {error:err.ToString()}
+    }
+}
+
 
 async function moveAllMessages(fromBoxName, toBoxName){
     try {
