@@ -26,22 +26,24 @@ var config = {
 };
 
 async function listBoxes(){
+    let connection;
     try {
-        const connection = await imaps.connect(config);
+        connection = await imaps.connect(config);
         const boxes = await connection.getBoxes();
         console.log(boxes);
         connection.end();
         return boxes;
     } catch(err) {
-        connection.end();
         console.log(err)
+        if(connection) { connection.end(); }
         return {error:err.ToString()}
     }
 }
  
 async function listMessages(box = "INBOX", sinceDaysAgo = 2) {
+    let connection;
     try {
-        const connection = await imaps.connect(config);
+        connection = await imaps.connect(config);
         await connection.openBox(box);
         var delay = 24 * 3600 * 1000;
         var yesterday = new Date();
@@ -62,6 +64,7 @@ async function listMessages(box = "INBOX", sinceDaysAgo = 2) {
             const result = {}
             //console.log(message.attributes.struct)
             //console.log(message)
+            result.box = box;
             result.uid = message.attributes.uid;
             // read header
             const header = message.parts.find(part => part.which === 'HEADER');
@@ -90,22 +93,23 @@ async function listMessages(box = "INBOX", sinceDaysAgo = 2) {
         connection.end();
         return results;
     } catch(err) {
-        connection.end();
         console.log(err)
+        if(connection) { connection.end(); }
         return {error:err.ToString()}
     }
 }
 
-async function deleteMessage(uid) {
+async function deleteMessage(uid, box) {
+    let connection;
     try {
-        const connection = await imaps.connect(config);
-        const result = await connection.deleteMessage(uid);
-        console.log(result)
+        connection = await imaps.connect(config);
+        await connection.openBox(box);
+	    await connection.deleteMessage(uid);
         connection.end();
-        return result;
+        return {status:"OK"};
     } catch(err) {
-        connection.end();
         console.log(err)
+        if(connection) { connection.end(); }
         return {error:err.ToString()}
     }
 }
@@ -162,6 +166,7 @@ if (require.main === module) {
 }
 
 // --- EXPORT
-exports.listMessages = listMessages;
 exports.listBoxes = listBoxes;
+exports.listMessages = listMessages;
+exports.deleteMessage = deleteMessage;
 exports.moveAllMessages = moveAllMessages;

@@ -76,9 +76,13 @@ function onclick_msg(msg){
 
 function onclick_delete(msg){
     console.log(msg);
-    fetch_json(api_url, {command:"delete-message", uid:msg.uid})
-    .then(resp => {
-        console.log(resp)
+    fetch_json(api_url, {command:"delete-message", box:msg.box, uid:msg.uid})
+    .then(result => {
+        console.log(result)
+        if(result.status === "OK" ) {
+            app.message = "message deleted."
+            app.messageList = app.messageList.filter((e) => (e.uid !== msg.uid));
+        }
     })
     .catch(err => {
         app.message = err.stack || err.toString();
