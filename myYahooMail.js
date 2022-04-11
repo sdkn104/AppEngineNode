@@ -62,6 +62,7 @@ async function listMessages(box = "INBOX", sinceDaysAgo = 2) {
             const result = {}
             //console.log(message.attributes.struct)
             //console.log(message)
+            result.uid = message.attributes.uid;
             // read header
             const header = message.parts.find(part => part.which === 'HEADER');
             //console.log(header)
