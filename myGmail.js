@@ -16,7 +16,7 @@ const USER_CREDENTIALS = {
     },
     sdkn104: {
         // If modifying these scopes, delete CLIENT_TOKEN_FILE.
-        SCOPES : ['https://www.googleapis.com/auth/gmail.send','https://www.googleapis.com/auth/gmail.readonly'],
+        SCOPES : ['https://www.googleapis.com/auth/gmail.send','https://mail.google.com/'],
         // The file token.json stores the user's access and refresh tokens, and is
         // created automatically when the authorization flow completes for the first
         // time.
@@ -139,6 +139,7 @@ async function listLabels(user = "sdkn104home") {
     try {   
         const oAuth2Client = await getAuthrizedClient(user);
         const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
+        const userProfile = await gmail.users.getProfile({userId:"me"});
         const res = await gmail.users.labels.list({
                 userId: 'me',
         });
@@ -175,6 +176,7 @@ async function listMessages(user = "sdkn104home", labelIds = [], messageCount = 
                 const headers = message.data.payload.headers;
                 //console.log("-------------------------")
                 //console.log(headers)
+                result.id = msg.id;
                 result.Subject = headers.find(e => e.name.toLowerCase() === "subject").value;
                 result.From = headers.find(e => e.name.toLowerCase() === "from").value;
                 result.To = headers.find(e => e.name.toLowerCase() === "to").value;
@@ -204,6 +206,31 @@ async function listMessages(user = "sdkn104home", labelIds = [], messageCount = 
     }
 }
 
+
+// delete message 
+async function deleteMessage(user = "sdkn104home", msgid) {
+    console.log(msgid)
+    try {
+        const oAuth2Client = await getAuthrizedClient(user);
+        const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
+
+        let res = await gmail.users.messages.delete({
+            userId: "me",
+            id: msgid,
+        });
+        /*let res = await gmail.users.messages.batchDelete({
+            userId: "me",
+            resource: {ids:[msgid]},
+        });*/
+        console.log(res);
+        return {res:JSON.stringify(res)};
+    } catch(err){
+        console.log(err)
+        return {error:err.stack || err.toString()}        
+    }
+}
+
+
 // --- MAIN
 if (require.main === module) { 
     console.log('called directly'); 
@@ -225,6 +252,7 @@ if (require.main === module) {
 
 // --- EXPORT
 exports.listMessages = listMessages;
+exports.deleteMessage = deleteMessage
 exports.listLabels = listLabels;
 exports.sendMail = sendMail;
 exports.sendAlertMail = sendAlertMail;

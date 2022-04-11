@@ -20,6 +20,7 @@ var app = new Vue({
     onclick_open: onclick_open,
     onclick_box: onclick_box,
     onclick_msg: onclick_msg,
+    onclick_delete: onclick_delete,
   },
   components: {
       loginBar: loginBar,
@@ -70,5 +71,22 @@ function onclick_box(box) {
 function onclick_msg(msg){
     app.currentMessage = msg;
     app.enablePopupBox = true;
+}
+
+function onclick_delete(msg){
+    app.messageList = [];
+    app.message = "processing..."
+    console.log(msg)
+    fetch_json(api_url, {
+        command:"delete-message", 
+        userAccountName:app.userAccountName, 
+        msgid:msg.id, 
+    })
+    .then(res => {
+        app.message = JSON.stringify(res)
+    })
+    .catch(err => {
+        app.message = err.stack || err.toString();
+    });
 }
 

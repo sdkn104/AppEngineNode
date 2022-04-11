@@ -30,6 +30,7 @@
             </div>
             <div class="messageList">
                 <div v-for="msg in messageList" >
+                    <input type="button" v-on:click="onclick_delete(msg)" value="Delete">
                     <a href="#" v-on:click="onclick_msg(msg);">{{msg.Date}} {{msg.Subject}}</a>
                 </div>
             </div>
