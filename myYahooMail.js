@@ -62,6 +62,7 @@ async function listMessages(box = "INBOX", sinceDaysAgo = 2) {
             const result = {}
             //console.log(message.attributes.struct)
             //console.log(message)
+            result.uid = message.attributes.uid;
             // read header
             const header = message.parts.find(part => part.which === 'HEADER');
             //console.log(header)
@@ -88,6 +89,20 @@ async function listMessages(box = "INBOX", sinceDaysAgo = 2) {
         //console.log(results)
         connection.end();
         return results;
+    } catch(err) {
+        connection.end();
+        console.log(err)
+        return {error:err.ToString()}
+    }
+}
+
+async function deleteMessage(uid) {
+    try {
+        const connection = await imaps.connect(config);
+        const result = await connection.deleteMessage(uid);
+        console.log(result)
+        connection.end();
+        return result;
     } catch(err) {
         connection.end();
         console.log(err)

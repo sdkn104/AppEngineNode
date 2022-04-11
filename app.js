@@ -128,6 +128,10 @@ app.post('/ymail', async (req, res) => {
         } else if( command === "list-messages"){
             const messageList = await myYahooMail.listMessages(req.body.box, req.body.sinceDaysAgo);
             res.status(200).send(messageList).end();
+        } else if( command === "delete-message"){
+            const result = await myYahooMail.deleteMessage(req.body.uid);
+            console.log(result);
+            res.status(200).send("OK").end();
         }
     } catch(err) {
         console.log("catch: "+err)
