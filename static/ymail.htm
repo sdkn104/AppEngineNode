@@ -15,6 +15,10 @@
 <body> 
     <div id="app">
         <login-bar action="/login"></login-bar>
+        <select v-model="userAccountName">
+            <option value="sdkn104" selected>sdkn104@yahoo.co.jp</option>
+            <option value="sdkn9">sdkn9</option>
+        </select>
         <input type="button" value="open" v-on:click="onclick_open"><br>
         Since <input type="text" v-model="sinceDaysAgo"> days ago<br>
         <div style="color:red;">{{message}}</div>

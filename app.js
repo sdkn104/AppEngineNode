@@ -123,13 +123,13 @@ app.post('/ymail', async (req, res) => {
         // command handling
         const command = req.body.command;
         if( command === "open" ){
-            const folders = await myYahooMail.listBoxes();
+            const folders = await myYahooMail.listBoxes(req.body.userAccountName);
             res.status(200).send(folders).end();
         } else if( command === "list-messages"){
-            const messageList = await myYahooMail.listMessages(req.body.box, req.body.sinceDaysAgo);
+            const messageList = await myYahooMail.listMessages(req.body.box, req.body.sinceDaysAgo, req.body.userAccountName);
             res.status(200).send(messageList).end();
         } else if( command === "delete-message"){
-            const result = await myYahooMail.deleteMessage(req.body.uid, req.body.box);
+            const result = await myYahooMail.deleteMessage(req.body.uid, req.body.box, req.body.userAccountName);
             console.log(result);
             res.status(200).send(result).end();
         }

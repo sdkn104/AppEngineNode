@@ -35,6 +35,7 @@ function onclick_open(){
     app.message = "";
     fetch_json(api_url, {
             command: "open", 
+            userAccountName:app.userAccountName, 
     })
     .then(boxes => {
         console.log(boxes)

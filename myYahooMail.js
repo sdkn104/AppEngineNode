@@ -7,28 +7,33 @@ const Iconv = require('iconv').Iconv;
 
 // 転送元メールアカウント情報
 const src_mail_server = "imap.mail.yahoo.co.jp"
-const src_mail_user = "sdkn104@yahoo.co.jp"
-const src_mail_pass = Private.yahoo_mail_password
+//const src_mail_user = "sdkn104@yahoo.co.jp"
+//const src_mail_pass = Private.yahoo_mail_password
 const src_mailbox = "INBOX"
 //const src_mailbox = "Trash"
 //const dst_mailbox = '"00&MFQwf3ux-"'  # 00ごみ箱
 //const dst_mailbox = '"00 &Tg2JgQ-"'  # 00 不要
+const USER_CREDENTIALS = Private.yahoo_mail_passwords;
 
-var config = {
-    imap: {
-        user: src_mail_user,
-        password: src_mail_pass,
-        host: src_mail_server,
-        port: 993,
-        tls: true,
-        authTimeout: 3000
-    }
-};
+function getConfig(user) {
+    const config = {
+        imap: {
+            user: Private.yahoo_mail_passwords[user].user,
+            password: Private.yahoo_mail_passwords[user].password,
+            host: src_mail_server,
+            port: 993,
+            tls: true,
+            authTimeout: 3000
+        }
+    };
+    return config;
+}
 
-async function listBoxes(){
+
+async function listBoxes(user = "sdkn104"){
     let connection;
     try {
-        connection = await imaps.connect(config);
+        connection = await imaps.connect(getConfig(user));
         const boxes = await connection.getBoxes();
         console.log(boxes);
         connection.end();
@@ -40,10 +45,10 @@ async function listBoxes(){
     }
 }
  
-async function listMessages(box = "INBOX", sinceDaysAgo = 2) {
+async function listMessages(box = "INBOX", sinceDaysAgo = 2, user = "sdkn104") {
     let connection;
     try {
-        connection = await imaps.connect(config);
+        connection = await imaps.connect(getConfig(user));
         await connection.openBox(box);
         var delay = 24 * 3600 * 1000;
         var yesterday = new Date();
@@ -99,10 +104,10 @@ async function listMessages(box = "INBOX", sinceDaysAgo = 2) {
     }
 }
 
-async function deleteMessage(uid, box) {
+async function deleteMessage(uid, box, user = "sdkn104") {
     let connection;
     try {
-        connection = await imaps.connect(config);
+        connection = await imaps.connect(getConfig(user));
         await connection.openBox(box);
 	    await connection.deleteMessage(uid);
         connection.end();

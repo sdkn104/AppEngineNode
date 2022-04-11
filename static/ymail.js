@@ -8,6 +8,7 @@ const api_url = "/ymail";
 var app = new Vue({
   el: '#app',
   data: {
+    userAccountName:"",
     boxes:{},
     messageList:[],
     sinceDaysAgo:2,
@@ -39,6 +40,7 @@ function onclick_open() {
     app.message = "";
     fetch_json(api_url, {
             command: "open", 
+            userAccountName:app.userAccountName, 
     })
     .then(boxes => {
         app.boxes = boxes;
@@ -53,7 +55,12 @@ function onclick_box(box){
     console.log(box);
     app.messageList = [];
     app.message = "processing..."
-    fetch_json(api_url, {command:"list-messages", box:box, sinceDaysAgo:app.sinceDaysAgo})
+    fetch_json(api_url, {
+        command:"list-messages", 
+        box:box, 
+        sinceDaysAgo:app.sinceDaysAgo,
+        userAccountName:app.userAccountName,
+    })
     .then(messageList => {
         console.log(messageList)
         app.messageList = messageList;
@@ -76,7 +83,12 @@ function onclick_msg(msg){
 
 function onclick_delete(msg){
     console.log(msg);
-    fetch_json(api_url, {command:"delete-message", box:msg.box, uid:msg.uid})
+    fetch_json(api_url, {
+        command:"delete-message", 
+        userAccountName:app.userAccountName, 
+        box:msg.box, 
+        uid:msg.uid, 
+    })
     .then(result => {
         console.log(result)
         if(result.status === "OK" ) {
