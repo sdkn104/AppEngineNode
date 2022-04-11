@@ -19,6 +19,7 @@ var app = new Vue({
     onclick_open: onclick_open,
     onclick_box: onclick_box,
     onclick_msg: onclick_msg,
+    onclick_delete: onclick_delete,
   },
   components: {
       loginBar: loginBar,
@@ -73,3 +74,13 @@ function onclick_msg(msg){
     app.enablePopupBox = true;
 }
 
+function onclick_delete(msg){
+    console.log(msg);
+    fetch_json(api_url, {command:"delete-message", uid:msg.uid})
+    .then(resp => {
+        console.log(resp)
+    })
+    .catch(err => {
+        app.message = err.stack || err.toString();
+    });
+}
