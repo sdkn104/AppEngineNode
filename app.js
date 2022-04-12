@@ -101,9 +101,9 @@ app.post('/gmail', async (req, res) => {
             const messageList = await myGmail.listMessages(req.body.userAccountName, [req.body.labelId], req.body.messageCount);
             res.status(200).send(messageList).end();
         } else if( command === "delete-message"){
-            const res = await myGmail.deleteMessage(req.body.userAccountName, req.body.msgid);
-            console.log(res);
-            res.status(200).send(res).end();
+            const r = await myGmail.deleteMessage(req.body.userAccountName, req.body.msgid);
+            console.log(r);
+            res.status(200).send(r).end();
         }
     } catch(err) {
         console.log("catch: "+err)

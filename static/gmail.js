@@ -87,7 +87,7 @@ function onclick_delete(msg){
         console.log(result)
         if(result.status === "OK" ) {
             app.message = "message deleted."
-            app.messageList = app.messageList.filter((e) => (e.uid !== msg.uid));
+            app.messageList = app.messageList.filter((e) => (e.id !== msg.id));
         }
     })
     .catch(err => {
