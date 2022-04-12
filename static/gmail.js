@@ -83,8 +83,12 @@ function onclick_delete(msg){
         userAccountName:app.userAccountName, 
         msgid:msg.id, 
     })
-    .then(res => {
-        app.message = JSON.stringify(res)
+    .then(result => {
+        console.log(result)
+        if(result.status === "OK" ) {
+            app.message = "message deleted."
+            app.messageList = app.messageList.filter((e) => (e.uid !== msg.uid));
+        }
     })
     .catch(err => {
         app.message = err.stack || err.toString();
