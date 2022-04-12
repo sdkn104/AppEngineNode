@@ -213,17 +213,12 @@ async function deleteMessage(user = "sdkn104home", msgid) {
     try {
         const oAuth2Client = await getAuthrizedClient(user);
         const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
-
         let res = await gmail.users.messages.delete({
             userId: "me",
             id: msgid,
         });
-        /*let res = await gmail.users.messages.batchDelete({
-            userId: "me",
-            resource: {ids:[msgid]},
-        });*/
         console.log(res);
-        return {res:JSON.stringify(res)};
+        return {status:"OK"};
     } catch(err){
         console.log(err)
         return {error:err.stack || err.toString()}        
