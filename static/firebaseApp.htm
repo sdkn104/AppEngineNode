@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- bootstrap -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">    
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+
+  <title>Firebase sample</title>
+
+  <style>
+    .panel { 
+          padding: 30px; margin:5px; border:solid 1px black; 
+    }
+    .modal_window {
+        position: fixed;
+        z-index: 999;
+        background-color: lightgray;
+    }
+
+  </style>
+
+    <script type="module">
+
+    </script>
+
+
+</head>
+<body> 
+    <div id="vueapp">
+        <div>
+            Collection: <input type="text" v-model="collectionName">
+            Filter: <input type="text" v-model="filterName">
+            Limit: <input type="number" v-model="limit">
+        </div>
+        <div style="color:red">{{message}}</div>
+
+        <!-- Search Condition -->
+        <a href="#" @click="onclick_condition">search condition</a>
+        <div v-if="displayConditionForm" class="panel modal_window">
+            Search Conditions
+            <form>
+                <table>
+                    <tr v-for="([key, value]) in Object.entries(this.searchCondition)">
+                        <th>{{key}}</th>
+                        <td>
+                            <input type="text" :name="key" v-model="value[0]" :list="key"><!--find((e)=>(e.name === key)) -->
+                            <datalist :id="key"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === key)).getOptions || (()=>([])))(null)"></option></datalist>
+                        </td>
+                        <td><input type="text" name="key" v-model="value[1]"></td>
+                    </tr>
+                </table>
+                <input type="button" value="Search" v-on:click="onclick_search">
+                <input type="button" value="Close" @click="displayConditionForm = false;">
+            </form>
+        </div>
+
+        <!-- Add Item -->
+        <div>
+            <a href="#" @click="onclick_add">add item</a>
+            <svg  @click="onclick_add" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square-fill" viewBox="0 0 16 16">
+                <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"/>
+            </svg>
+        </div>
+        
+        <!-- Deltailed/Edit -->
+        <div v-if="Object.keys(this.currentDoc).length > 0" class="panel modal_window">
+            <span v-if="this.currentDoc.docid">Edit Item</span>
+            <span v-else="this.currentDoc.docid">Add Item</span>
+            <form>
+                <table>
+                    <tr v-for="n in detailNames">
+                        <th>{{n.name}}</th>
+                        <td>
+                            <input type="text" :name="n.name" v-model="currentDoc.data[n.name]" :list="n.name">
+                            <datalist :id="n.name"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === n.name)).getOptions || (()=>([])))(null)"></option></datalist>
+                        </td>
+                    </tr>
+                </table>
+                <input type="button" value="Submit" @click="onclick_submit">
+                <input type="button" value="Close" @click="onclick_close">
+            </form>
+        </div>
+
+        <!-- Resultant List -->
+        <div class="add-item container panel">
+            Search Results
+            <table border="1">
+              <thead>
+               <tr>
+                   <th>No.</th>
+                   <th v-for="n in listNames">{{n.name}}</th>
+               </tr>
+             </thead>
+             <tbody> 
+                <tr v-for="(item, index) in this.docList" :key="item.docid">
+                    <td>{{ index + 1 }}</td>
+                    <td v-for="n in listNames">{{item.data[n.name]}}</td>
+                    <td @click="onclick_edit(index)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16"><path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/></svg>
+                    </td>
+                    <td @click="onclick_delete(index)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16"><path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/></svg>
+                    </td>
+                </tr>
+              </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <!-- vue -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <!-- firestore -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script type="module">
+
+        var vueapp = new Vue({
+            el: '#vueapp',
+            data: {
+                firebaseConfig:{
+                    apiKey: "AIzaSyB-AyeURGKny-QG5SPKoum5pUia0xmz-AI",
+                    authDomain: "fir-sample-c25f9.firebaseapp.com",
+                    projectId: "fir-sample-c25f9",
+                    storageBucket: "fir-sample-c25f9.appspot.com",
+                    messagingSenderId: "268323645130",
+                    appId: "1:268323645130:web:b23459622031acb9d87633",
+                    measurementId: "G-JG3TRPTR3W"
+                },
+                firebaseSettings:{ timestampsInSnapshots: true },
+                collectionName:"sampleKey",
+                filterName:"",
+                limit:2000,
+                schemaList:{
+                    sampleKey: [
+                        {name:"name", list:true}, 
+                        {name:"state", list:true}, 
+                        {name:"country", list:true}, 
+                        {name:"db_doc_id"}
+                    ],
+                    kakeibo: [
+                        {name:"date", list:true}, 
+                        {name:"himoku", list:true, getOptions: (obj)=>(["a", "b"])}, 
+                        {name:"utiwake", list:true, getOptions: (obj)=>(["a", "b"])}, 
+                        {name:"biko", list:true}, 
+                        {name:"mark", list:true, getOptions: (obj)=>(["一時会計", "特別会計"])}, 
+                        {name:"income", list:true}, 
+                        {name:"outgo", list:true}, 
+                        {name:"account", list:true, getOptions: (obj)=>(["a", "b"])}, 
+                        {name:"category_FPlan"},
+                        {name:"account_add"},
+                        {name:"account_sub"}
+                    ],
+                },
+                schema: [],
+                filter: {
+                    sampleKey: {
+                        "": function(arr) {return arr;},
+                    },
+                    kakei: {
+                        "": (a)=>(a),
+                        kakeibo_all: kakeibo_all,
+                    }
+                },
+                config:{},
+                userAccountName:"",
+                displayConditionForm:false,
+                searchCondition:{},
+                docList:[],
+                currentDoc:{},
+                message:"",
+            },
+            methods: {
+                onclick_condition: onclick_condition,
+                onclick_search: onclick_search,
+                onclick_add: onclick_add,
+                onclick_edit: onclick_edit,
+                onclick_delete: onclick_delete,
+                onclick_submit: onclick_submit,
+                onclick_close: onclick_close,
+            },
+            components: {
+            },
+            computed: {
+                listNames: function () {
+                    return this.schema?.filter((e)=>(e.list));
+                },
+                detailNames: function () {
+                    return this.schema;
+                },
+            },
+            watch: {
+                collectionName: async function(val){
+                    this.message = "processing..."
+                    this.searchCondition = {}; 
+                    this.docList = []; 
+                    this.currentDoc = [];
+                    this.schema = [];
+                    this.displayConditionForm = false
+                    this.schema = await getSchema(this.collectionName, this.filterName); 
+                    this.message = ""
+                },
+                filterName: async function(val){
+                    this.message = "processing..."
+                    this.searchCondition = {}; 
+                    this.docList = []; 
+                    this.currentDoc = [];
+                    this.schema = [];
+                    this.displayConditionForm = false
+                    this.schema = await getSchema(this.collectionName, this.filterName); 
+                    this.message = ""
+                }
+            },
+            mounted: async function() {
+            },
+        });
+
+        vueapp.schema = await getSchema(vueapp.collectionName, vueapp.filterName); 
+
+        async function onclick_condition(){
+            if( Object.keys(vueapp.searchCondition).length === 0 && this.schema.length > 0 ) {
+                console.log("set condition", this.schema)
+                const ent = this.schema.map((e)=>([e.name, ["",""]]));
+                vueapp.searchCondition = Object.fromEntries(ent)
+            }
+            vueapp.displayConditionForm = true; 
+            
+            /*
+            let ss= await firebase.firestore().collection("kakei").limit(4000).get();
+            console.log(ss.count)
+            ss.forEach(doc =>{
+                const dd = doc.data();
+                console.log(dd)
+                const ud = getKakeiboUpdate(dd);
+                console.log(ud)
+            })*/
+
+        }
+
+        async function onclick_search(event) {
+            console.log(vueapp.searchCondition)
+            vueapp.message = "processing..."
+            try {
+                const conditionEqual = Object.entries(vueapp.searchCondition).filter((e)=>(e[1][0] !== "" && e[1][1] === ""))
+                const conditionUnEqual = Object.entries(vueapp.searchCondition).filter((e)=>(e[1][0] !== "" && e[1][1] !== ""))
+                let coll = firebase.firestore().collection(vueapp.collectionName).limit(4000); // limit for preventing error lock
+                // conditionEqual.forEach((e)=>{
+                //     const k = e[0]
+                //     const v = e[1]
+                //     coll = coll.where(k, "==", v[0] );
+                //     console.log("add condition: " + k + " === " + v[0])
+                // });
+                const querySnapshot = await coll.get();
+                let docs = querySnapshot.docs.map((d)=>({docid:d.id, data:d.data()}));
+                if(vueapp.filterName) {
+                    docs = vueapp.filter[vueapp.collectionName][vueapp.filterName](docs);
+                }
+                vueapp.docList = [];
+                docs.forEach((doc) => {
+                    const cond1 = conditionEqual.every((e)=>{
+                        const name = e[0]
+                        const value = e[1]
+                        return (doc.data[name] === value[0]);
+                    });
+                    const cond2 = conditionUnEqual.every((e)=>{
+                        const name = e[0]
+                        const value = e[1]
+                        return (doc.data[name] >= value[0] && doc.data[name] <= value[1]);
+                    });
+                    if(cond1 && cond2) {
+                        //console.log(doc.docid, " => ", doc.data);
+                        vueapp.docList.push(doc);
+                    }
+                });
+                vueapp.docList = vueapp.docList.slice(0,vueapp.limit);
+                vueapp.displayConditionForm = false;
+            } catch(error) {
+                console.log("Error getting documents: ", error);
+            } finally {
+                vueapp.message = ""
+            }
+        }
+
+
+        async function onclick_add(){
+            vueapp.currentDoc = {
+                data:Object.fromEntries(this.detailNames.map((e)=>([e,""]))),
+                docid:null
+            }
+        }
+
+        function onclick_edit(index){
+            console.log("edit "+index)
+            vueapp.currentDoc = vueapp.docList[index];
+        }
+
+        function onclick_delete(index){
+            console.log("delete "+index);
+            const docid = vueapp.docList[index].docid;
+            alert("delete this item ?")
+            vueapp.docList.splice(index, 1);
+            firebase.firestore().collection(vueapp.collectionName).doc(docid).delete();
+        }
+
+        async function onclick_submit(event){
+            const obj = vueapp.currentDoc.data;
+            if( vueapp.currentDoc.docid ) { // edit
+                await firebase.firestore().collection(vueapp.collectionName).doc(vueapp.currentDoc.docid).set(obj);
+            } else { // add
+                await firebase.firestore().collection(vueapp.collectionName).add(obj);
+            }
+            onclick_search();
+            vueapp.currentDoc = {};
+        } 
+
+        function onclick_close(event){
+            vueapp.currentDoc = {};
+        } 
+
+        function kakeibo_all(arr){
+            return arr.map(e=>(Object.assign(e, {extra: false})))
+        }
+
+
+        async function getSchema(collectionName, filterName){
+            const name = filterName ? filterName : collectionName;
+            if( vueapp.schemaList[name] ) {
+                return vueapp.schemaList[name];
+            } else {
+                // auto create
+                const ss = await firebase.firestore().collection(collectionName).limit(1).get();
+                console.log(ss)
+                let ds = ss.docs.map((d)=>(d.data()));
+                console.log(ds)
+                if(ds.length === 0) { console.log("cannot get data of "+collectionName+","+filterName); return []; }
+                if(filterName) {
+                    if(vueapp.filter[collectionName][filterName]) {
+                        ds = vueapp.filter[collectionName][filterName](ds);
+                    }
+                }
+                console.log(ds)
+                const sc = Object.keys(ds[0]).map((k)=>({name:k, list:true}));
+                return sc;
+            }
+        }
+
+        function getKakeiboUpdate(docData) {
+            const update = {};
+            
+            //update.date = PARSE_DATETIME("%Y/%m/%d", DATE);
+            update.income = docData.income ? Number(docData.income) : 0;
+            update.outgo = docData.outgo ? Number(docData.outgo) : 0;
+            update.shusi = update.income - update.outgo;
+            update.account = docData.account ? docData.account : '現金';
+            update.account_add = docData.account ? docData.account : '現金';
+            update.account_sub =  docData.himoku === '預金引き出し' ? '現金' :
+                                    docData.himoku === '預金預け入れ' ? '現金' :
+                                    docData.himoku === '口座間振替' ? docData.utiwake :
+                                    null ;
+            update.category_FPlan = null;
+            update.account_all = update.account_add + (update.account_sub ? update.account_sub : '');
+            update.category_FPlan = 
+                docData.mark?.match('%特別会計%') ? '11特別会計' :
+                docData.mark?.match('%一時会計%') ? '04一時会計《年単位》' :
+                docData.himoku === '車関連費' && docData.utiwake === '自動車税' ? '03固定支出《毎年》' :
+                docData.himoku === '住居費' && docData.utiwake === '固都税' ? '03固定支出《毎年》' :
+                docData.himoku === '交通通信費' && docData.utiwake === 'ＮＨＫ受信料' ? '03固定支出《毎年》' :
+                docData.himoku === '保険料' && docData.utiwake === '生命保険料' ? '03固定支出《毎年》' :
+                docData.himoku === '預金引き出し' ? '20振替' :
+                docData.himoku === '預金預け入れ' ? '20振替' :
+                docData.himoku === '口座間振替' ? '20振替' :
+                docData.himoku === '特別収入' && docData.utiwake === '出張旅費精算' ? '06出張通勤会計' :
+                docData.himoku === '特別収入' && docData.utiwake === '通勤費補助' ? '06出張通勤会計' :
+                docData.himoku === '特別収入' && docData.utiwake === '投資利益' ? '07投資会計' :
+                docData.himoku === '特別支出' && docData.utiwake === '通勤《バス》' ? '06出張通勤会計' :
+                docData.himoku === '特別支出' && docData.utiwake === '通勤《電車》' ? '06出張通勤会計' :
+                docData.himoku === '特別支出' && docData.utiwake === '通勤《駐輪》' ? '06出張通勤会計' :
+                docData.himoku === '特別支出' && docData.utiwake === '出張費' ? '06出張通勤会計' :
+                docData.himoku === '特別支出' && docData.utiwake === '投資損失' ? '07投資会計' :
+                docData.himoku === '住居費' && docData.utiwake === '銀行１融資' ? '05住宅ローン' :
+                docData.himoku === '保険料' && docData.utiwake === '個人年金' ? '05貯蓄性支出' :
+                docData.himoku === '教養・娯楽費' && docData.utiwake === '新聞' ? '01固定支出《毎月》' :
+                docData.himoku === '交通通信費' && docData.utiwake === 'CATV' ? '01固定支出《毎月》' :
+                docData.himoku === '交通通信費' && docData.utiwake === '電話料《NTT》' ? '01固定支出《毎月》' :
+                docData.himoku === '交通通信費' && docData.utiwake === '電話料《携帯》' ? '01固定支出《毎月》' :
+                docData.himoku === '交通通信費' && docData.utiwake === 'internet' ? '01固定支出《毎月》' :
+                docData.himoku === 'こども' && docData.utiwake === '授業料' ? '01固定支出《毎月》' :
+                docData.himoku === 'こども' && docData.utiwake === '習い事月謝' ? '01固定支出《毎月》' :
+                //docData.himoku === '雑費' & docData.utiwake === '香へ' ? '00香へ' :
+                docData.himoku === '給与・賞与' ? '10収入' :
+                docData.himoku === '雑収入' ? '10収入' :
+                docData.himoku === '贈答《受》' ? '10収入' :
+                docData.himoku === '出所不明金' ? '10収入' :
+                docData.himoku === '特別収入' ? '11特別会計' :
+                docData.himoku === '保険料' ? '01固定支出《毎月》' :
+                docData.himoku === '車関係費' ? '01固定支出《毎月》' :
+                docData.himoku === '住居費' ? '01固定支出《毎月》' :
+                docData.himoku === '特別支出' ? '11特別会計' :
+                docData.himoku === '税金' ? '08給与賞与控除' :
+                docData.himoku === '社会保険料' ? '08給与賞与控除' :
+                docData.himoku === '会費' ? '08給与賞与控除' :
+                docData.himoku === '預金引き出し' ? '20振替' :
+                docData.himoku === '預金預け入れ' ? '20振替' :
+                docData.himoku === '口座間振替' ? '20振替' :
+                docData.himoku === '水道光熱費' ? '01固定支出《毎月》' :
+                '00基本生活費';
+            return update;
+        }
+
+        async function deleteCollection(db, collectionName) {
+            const snapshot = await db.collection(collectionName).get();
+            const docs = snapshot.docs;
+            console.log(docs.length)
+            let batch = db.batch();
+            for(let i=0; i<docs.length; i++) {
+                //console.log("del ", docs[i].data())
+                batch.delete(docs[i].ref);
+                if( (i+1) % 500 === 0 ) {
+                    await batch.commit();
+                    console.log("delete commit")
+                    batch = db.batch();
+                }
+            }
+            await batch.commit();
+            console.log("delete commit")
+        }
+
+        // Import the functions you need from the SDKs you need
+        //import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        //import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        // Initialize Firebase
+        if (firebase.apps.length === 0) {
+            firebase.initializeApp(vueapp.firebaseConfig);
+        }
+        //const analytics = getAnalytics(app);
+        firebase.firestore().settings(vueapp.firebaseSettings);
+
+        
+        /*
+        const db = firebase.firestore();
+        db.collection(vueapp.collectionName).doc("mydoc").set({
+            name: "Tokyo",
+            state: "x",
+            country: "JP"
+        })
+       .then(function() {
+            console.log("Document successfully written!");
+        })
+        .catch(function(error) {
+            console.error("Error writing document: ", error);
+        });
+
+        const coll = db.collection(vueapp.collectionName);
+        console.log(coll);
+        
+        const docRef = coll.doc("mydoc");
+        console.log(docRef)
+        docRef.get().then((doc) => {
+            if (doc.exists) {
+                console.log("Document data:", doc.data());
+            }
+        }).catch((error) => {
+            console.log("Error getting document:", error);
+        });
+        */
+
+    </script>
+    <!-- bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+
+</body>
+</html>
+
