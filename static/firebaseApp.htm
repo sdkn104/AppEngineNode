@@ -151,7 +151,18 @@
                         {name:"account", list:true, getOptions: (obj)=>(["a", "b"])}, 
                         {name:"category_FPlan"},
                         {name:"account_add"},
-                        {name:"account_sub"}
+                        {name:"account_sub"},
+                        {name:"CREATE_TIME"},
+                    ],
+                    kakeibo_zandaka: [
+                        {name:"account", list:true}, 
+                        {name:"zandaka", list:true}, 
+                    ],
+                    kakeibo_summary: [
+                        {name:"key1", list:true}, 
+                        {name:"key2", list:true}, 
+                        {name:"key3", list:true}, 
+                        {name:"value", list:true}
                     ],
                 },
                 schema: [],
@@ -159,9 +170,17 @@
                     sampleKey: {
                         "": function(arr) {return arr;},
                     },
-                    kakei: {
+                    kakeibo: {
                         "": (a)=>(a),
                         kakeibo_all: kakeibo_all,
+                    },
+                    kakeibo_zandaka: {
+                        "": (a)=>(a),
+                        kakeibo_zandaka_all: kakeibo_zandaka_all,
+                    },
+                    kakeibo_summary: {
+                        "": (a)=>(a),
+                        kakeibo_summary_all: kakeibo_summary_all,
                     }
                 },
                 config:{},
@@ -217,7 +236,12 @@
             },
         });
 
+        // init
+        vueapp.schemaList.kakeibo_all = vueapp.schemaList.kakeibo;
+        vueapp.schemaList.kakeibo_zandaka_all = vueapp.schemaList.kakeibo_zandaka;
+        vueapp.schemaList.kakeibo_summary_all = vueapp.schemaList.kakeibo_summary;
         vueapp.schema = await getSchema(vueapp.collectionName, vueapp.filterName); 
+
 
         async function onclick_condition(){
             if( Object.keys(vueapp.searchCondition).length === 0 && this.schema.length > 0 ) {
@@ -256,6 +280,7 @@
                 let docs = querySnapshot.docs.map((d)=>({docid:d.id, data:d.data()}));
                 if(vueapp.filterName) {
                     docs = vueapp.filter[vueapp.collectionName][vueapp.filterName](docs);
+                    //docs = docs.sort((a,b)=>(a.date > b.date ? 1 : a.date < b.date ? -1 : 0))
                 }
                 vueapp.docList = [];
                 docs.forEach((doc) => {
@@ -320,9 +345,20 @@
         } 
 
         function kakeibo_all(arr){
-            return arr.map(e=>(Object.assign(e, {extra: false})))
+            return arr.sort((a,b)=>{
+                return a.data.date > b.data.date ? 1 : a.data.date < b.data.date ? -1 : 0;
+            });
         }
-
+        function kakeibo_zandaka_all(arr){
+            return arr.sort((a,b)=>{
+                return b.data.zandaka - a.data.zandaka;
+            });
+        }
+        function kakeibo_summary_all(arr){
+            return arr.sort((a,b)=>{
+                return a.data.key3 > b.data.key3 ? 1 : a.data.key3 < b.data.key3 ? -1 : 0;
+            });
+        }
 
         async function getSchema(collectionName, filterName){
             const name = filterName ? filterName : collectionName;
