@@ -276,7 +276,9 @@
             try {
                 const conditionEqual = Object.entries(vueapp.searchCondition).filter((e)=>(e[1][0] !== "" && e[1][1] === ""))
                 const conditionUnEqual = Object.entries(vueapp.searchCondition).filter((e)=>(e[1][0] !== "" && e[1][1] !== ""))
+                const conditionRegExp = Object.entries(vueapp.searchCondition).filter((e)=>(e[1][0] === "" && e[1][1] !== ""))
                 let coll = firebase.firestore().collection(vueapp.collectionName).limit(vueapp.limit); // limit for preventing error lock
+                // set server-side filtering
                 conditionEqual.forEach((e)=>{
                     const k = e[0]
                     const v = e[1]
@@ -287,32 +289,35 @@
                 if(p) {
                     coll = coll.where(p[0], ">=", p[1][0] ).where(p[0], "<=", p[1][1] );
                 }
+                // query
                 const querySnapshot = await coll.get();
                 console.log(querySnapshot.size)
                 let docs = querySnapshot.docs.map((d)=>({docid:d.id, data:d.data()}));
+                // apply custom filter
                 if(vueapp.filterName) {
                     docs = vueapp.filter[vueapp.collectionName][vueapp.filterName](docs);
                     //docs = docs.sort((a,b)=>(a.date > b.date ? 1 : a.date < b.date ? -1 : 0))
                 }
+                // create doc list
                 vueapp.docList = [];
                 docs.forEach((doc) => {
-                    /*const cond1 = conditionEqual.every((e)=>{
+                    const cond1 = conditionRegExp.every((e)=>{
                         const name = e[0]
                         const value = e[1]
-                        return (doc.data[name] === value[0]);
-                    });*/
+                        return (String(doc.data[name]).match(value[1]));
+                    });
                     const cond2 = conditionUnEqual.every((e)=>{
                         const name = e[0]
                         const value = e[1]
                         return (doc.data[name] >= value[0] && doc.data[name] <= value[1]);
                     });
-                    if(cond2) {
+                    if(cond1 && cond2) {
                         //console.log(doc.docid, " => ", doc.data);
                         vueapp.docList.push(doc);
                     }
                 });
-                vueapp.docList = vueapp.docList.slice(0,vueapp.limit);
-                vueapp.searchRelustMessage = querySnapshot.size + " /  " + vueapp.docList.length; + " ( limit " + vueapp.limit + ")"
+                vueapp.searchRelustMessage = vueapp.docList.length + " /  " + querySnapshot.size + " ( limit " + vueapp.limit + ")"
+                                            + (querySnapshot.size === vueapp.limit ? "  ERROR: search results exceeded the limit" : "")
                 vueapp.displayConditionForm = false;
             } catch(error) {
                 console.log("Error getting documents: ", error);
