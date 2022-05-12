@@ -157,16 +157,26 @@
                         {name:"account_sub"},
                         {name:"CREATE_TIME"},
                     ],
+                    kakeibo_all:null,
                     kakeibo_zandaka: [
                         {name:"account", list:true}, 
                         {name:"zandaka", list:true}, 
                     ],
+                    kakeibo_zandaka_all:null,
                     kakeibo_summary: [
                         {name:"key1", list:true}, 
                         {name:"key2", list:true}, 
                         {name:"key3", list:true}, 
                         {name:"value", list:true}
                     ],
+                    kakeibo_summary_all:null,
+                    kakeibo_himoku: [
+                        {name:"key1", list:true}, 
+                        {name:"key2", list:true}, 
+                        {name:"key3"}, 
+                        {name:"value"}
+                    ],
+                    kakeibo_himoku_all:null,
                 },
                 schema: [],
                 filter: {
@@ -176,18 +186,22 @@
                     kakeibo: {
                         "": (a)=>(a),
                         "id": (a)=>(a),
-                        kakeibo_all: kakeibo_all,
+                        kakeibo_all: (a)=>(sortByFields(a, ["date", "himoku", "utiwake"], [-1])),
                     },
                     kakeibo_zandaka: {
                         "": (a)=>(a),
                         "id": (a)=>(a),
-                        kakeibo_zandaka_all: kakeibo_zandaka_all,
+                        kakeibo_zandaka_all:  (a)=>(sortByFields(a, ["zandaka"], [-1])),
                     },
                     kakeibo_summary: {
                         "": (a)=>(a),
                         "id": (a)=>(a),
-                        kakeibo_summary_all: kakeibo_summary_all,
-                    }
+                        kakeibo_summary_all:  (a)=>(sortByFields(a, ["key3", "key1", "key2"])),
+                    },
+                    kakeibo_himoku: {
+                        "id": (a)=>(a),
+                        kakeibo_himoku_all: (a)=>(sortByFields(a, ["key1", "key2"])),
+                    },
                 },
                 config:{},
                 userAccountName:"",
@@ -247,6 +261,7 @@
         vueapp.schemaList.kakeibo_all = vueapp.schemaList.kakeibo;
         vueapp.schemaList.kakeibo_zandaka_all = vueapp.schemaList.kakeibo_zandaka;
         vueapp.schemaList.kakeibo_summary_all = vueapp.schemaList.kakeibo_summary;
+        vueapp.schemaList.kakeibo_himoku_all = vueapp.schemaList.kakeibo_himoku;
         vueapp.schema = await getSchema(vueapp.collectionName, vueapp.filterName); 
 
 
@@ -362,20 +377,25 @@
             vueapp.currentDoc = {};
         } 
 
-        function kakeibo_all(arr){
-            return arr.sort((a,b)=>{
-                return a.data.date < b.data.date ? 1 : a.data.date > b.data.date ? -1 : 0;
-            });
-        }
-        function kakeibo_zandaka_all(arr){
-            return arr.sort((a,b)=>{
-                return b.data.zandaka - a.data.zandaka;
-            });
-        }
-        function kakeibo_summary_all(arr){
-            return arr.sort((a,b)=>{
-                return a.data.key3 > b.data.key3 ? 1 : a.data.key3 < b.data.key3 ? -1 : 0;
-            });
+
+
+
+        // sorting by multiple field values
+        // const sorted = sortByFields([{, }, ...], ["a", "b"], [1, -1])
+        function sortByFields(arr, fields, orders = []){
+            const compareBase = (a, b, field) => ((a.data[field] > b.data[field]) ? 1 : (a.data[field] < b.data[field]) ? -1 : 0)
+            const compare = (a, b) => {
+                for(let i = 0; i < fields.length; i++) {
+                    const field = fields[i];
+                    const r = compareBase(a, b, field);
+                    //console.log(i, field,a, b,  r)
+                    if( r !== 0 ) {
+                        return ( orders[i] ? r * orders[i] : r );
+                    }
+                }
+                return 0;
+            }
+            return arr.sort(compare);
         }
 
         async function getSchema(collectionName, filterName){
