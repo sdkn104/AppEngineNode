@@ -47,6 +47,9 @@
                         <th>{{key}}</th>
                         <td>
                             <input type="text" :name="key" v-model="value[0]" :list="key" @focus="setOptions"><!--find((e)=>(e.name === key)) -->
+<!---
+                            <datalist :id="key"><option :value="opt" v-for="opt in test[key]"></option></datalist>
+-->
                             <datalist :id="key"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === key)).options)"></option></datalist>
                         </td>
                         <td><input type="text" name="key" v-model="value[1]"></td>
@@ -138,10 +141,10 @@
                     measurementId: "G-L1PTCJS8T2"
                 },
                 firebaseSettings:{ timestampsInSnapshots: true },
-                collectionName:"sampleKey",
-                filterName:"",
+                collectionName:"kakeibo",
+                filterName:"kakeibo_all",
                 limit:4000,
-                schemaList:{
+                schemaList:{ // key = filterName
                     sampleKey: [
                         {name:"name", list:true}, 
                         {name:"state", list:true}, 
@@ -216,6 +219,7 @@
                 currentDoc:{},
                 message:"",
                 searchRelustMessage:"",
+                test:{},
             },
             methods: {
                 onclick_condition: onclick_condition,
@@ -257,11 +261,10 @@
                     this.displayConditionForm = false
                     this.schema = await getSchema(this.collectionName, this.filterName); 
                     this.message = ""
-                    set_options();
+                    //set_options();
                 }
             },
             mounted: async function() {
-
             },
         });
 
@@ -290,11 +293,9 @@
             const filter = vueapp.filterName;
             for( const s of vueapp.schemaList[vueapp.filterName] ) {
                 if(s.getOptions) {
-                    s.options = await s.getOptions(null);
-                    //vueapp.searchCondition[s.name].options = await s.getOptions(null);
+                    Vue.set(s, "options", await s.getOptions(null))
                 } else {
-                    s.options = []
-                    //vueapp.searchCondition[s.name].options = s.options = [];
+                    Vue.set(s, "options", [])
                 }
             };
         }
@@ -305,10 +306,9 @@
             const filter = vueapp.filterName;
             const s = vueapp.schemaList[vueapp.filterName].find((e)=>(e.name === key));
             if(s.getOptions) {
-                s.options = await s.getOptions(null);
-                console.log("options", s.options)
+                Vue.set(s, "options", await s.getOptions(null));
             } else {
-                s.options = [];
+                Vue.set(s, "options", [])
             }
         }
 
