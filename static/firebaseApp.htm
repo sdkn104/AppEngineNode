@@ -46,8 +46,8 @@
                     <tr v-for="([key, value]) in Object.entries(this.searchCondition)">
                         <th>{{key}}</th>
                         <td>
-                            <input type="text" :name="key" v-model="value[0]" :list="key"><!--find((e)=>(e.name === key)) -->
-                            <datalist :id="key"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === key)).getOptions || (()=>([])))(null)"></option></datalist>
+                            <input type="text" :name="key" v-model="value[0]" :list="key" @focus="setOptions"><!--find((e)=>(e.name === key)) -->
+                            <datalist :id="key"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === key)).options)"></option></datalist>
                         </td>
                         <td><input type="text" name="key" v-model="value[1]"></td>
                     </tr>
@@ -75,7 +75,7 @@
                         <th>{{n.name}}</th>
                         <td>
                             <input type="text" :name="n.name" v-model="currentDoc.data[n.name]" :list="n.name">
-                            <datalist :id="n.name"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === n.name)).getOptions || (()=>([])))(null)"></option></datalist>
+                            <datalist :id="n.name"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === n.name)).options)"></option></datalist>
                         </td>
                     </tr>
                 </table>
@@ -120,6 +120,11 @@
 
     <script type="module">
 
+
+        function myUniq(array) {
+            return array.filter((elem, index, self) => (self.indexOf(elem) === index));
+        }
+
         var vueapp = new Vue({
             el: '#vueapp',
             data: {
@@ -145,8 +150,8 @@
                     ],
                     kakeibo: [
                         {name:"date", list:true}, 
-                        {name:"himoku", list:true, getOptions: (obj)=>(["a", "b"])}, 
-                        {name:"utiwake", list:true, getOptions: (obj)=>(["a", "b"])}, 
+                        {name:"himoku", list:true, getOptions: getOptions_himoku},
+                        {name:"utiwake", list:true, getOptions: getOptions_utiwake},
                         {name:"biko", list:true}, 
                         {name:"mark", list:true, getOptions: (obj)=>(["一時会計", "特別会計"])}, 
                         {name:"income", list:true}, 
@@ -220,6 +225,7 @@
                 onclick_delete: onclick_delete,
                 onclick_submit: onclick_submit,
                 onclick_close: onclick_close,
+                setOptions: setOptions,
             },
             components: {
             },
@@ -251,9 +257,11 @@
                     this.displayConditionForm = false
                     this.schema = await getSchema(this.collectionName, this.filterName); 
                     this.message = ""
+                    set_options();
                 }
             },
             mounted: async function() {
+
             },
         });
 
@@ -264,6 +272,51 @@
         vueapp.schemaList.kakeibo_himoku_all = vueapp.schemaList.kakeibo_himoku;
         vueapp.schema = await getSchema(vueapp.collectionName, vueapp.filterName); 
 
+                        
+        function getOptions_himoku(obj) {
+            return get_docs("kakeibo_himoku")
+                .then(r=>{
+                    return myUniq(r.map(e=>e.data().key1)).sort()
+                })
+        } 
+        function getOptions_utiwake(obj) {
+            return get_docs("kakeibo_himoku").then((r)=>{
+                //console.log("filter", r.filter((e)=>(e.data().key1 === vueapp.searchCondition.himoku[0])))
+                return myUniq(r.filter((e)=>(e.data().key1 === vueapp.searchCondition.himoku[0])).map(e=>e.data().key2)).sort()
+            })
+        } 
+
+        async function set_options(){
+            const filter = vueapp.filterName;
+            for( const s of vueapp.schemaList[vueapp.filterName] ) {
+                if(s.getOptions) {
+                    s.options = await s.getOptions(null);
+                    //vueapp.searchCondition[s.name].options = await s.getOptions(null);
+                } else {
+                    s.options = []
+                    //vueapp.searchCondition[s.name].options = s.options = [];
+                }
+            };
+        }
+
+        async function setOptions(evt){
+            console.log("setOptions")
+            const key = evt.target.name;
+            const filter = vueapp.filterName;
+            const s = vueapp.schemaList[vueapp.filterName].find((e)=>(e.name === key));
+            if(s.getOptions) {
+                s.options = await s.getOptions(null);
+                console.log("options", s.options)
+            } else {
+                s.options = [];
+            }
+        }
+
+        async function get_docs(collectionName) {
+            const coll = firebase.firestore().collection(collectionName).limit(vueapp.limit);
+            const querySnapshot = await coll.get();
+            return querySnapshot.docs;
+        }
 
         async function onclick_condition(){
             if( Object.keys(vueapp.searchCondition).length === 0 && this.schema.length > 0 ) {
