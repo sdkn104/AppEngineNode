@@ -46,12 +46,11 @@
                         <th>{{key}}</th>
                         <td>
                             <input type="text" :name="key" v-model="value[0]" :list="key" @focus="setOptions"><!--find((e)=>(e.name === key)) -->
-<!---
-                            <datalist :id="key"><option :value="opt" v-for="opt in test[key]"></option></datalist>
--->
                             <datalist :id="key"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === key)).options)"></option></datalist>
                         </td>
-                        <td><input type="text" name="key" v-model="value[1]"></td>
+                        <td>
+                            <input type="text" :name="key" v-model="value[1]" :list="key" @focus="setOptions">
+                        </td>
                     </tr>
                 </table>
                 <input type="button" value="Search" v-on:click="onclick_search">
@@ -76,8 +75,9 @@
                     <tr v-for="n in detailNames">
                         <th>{{n.name}}</th>
                         <td>
-                            <input type="text" :name="n.name" v-model="currentDoc.data[n.name]" :list="n.name">
-                            <datalist :id="n.name"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === n.name)).options)"></option></datalist>
+                            <input type="text" :name="n.name" v-model="currentDoc.data[n.name]" :list="n.name" @focus="setOptions">
+                            <!--- same ID of datalist ?????? -->
+                            <datalist :id="n.name"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === n.name)).options)"></option></datalist> 
                         </td>
                     </tr>
                 </table>
@@ -202,7 +202,7 @@
                         ],
                     },
                 },
-                
+
                 schema: [],
 
                 config:{},
@@ -263,11 +263,11 @@
         }
         function getOptions_utiwake(obj) {
             return get_docs("kakeibo_himoku").then((r)=>{
-                return myUniq(r.filter((e)=>(e.data().key1 === vueapp.searchCondition.himoku[0])).map(e=>e.data().key2)).sort()
+                return myUniq(r.filter((e)=>(e.data().key1 === vueapp.currentDoc.himoku)).map(e=>e.data().key2)).sort()  // TODO: for searchcondition
             })
         } 
 
-        async function set_options(){
+        /*async function set_options(){
             for( const s of vueapp.sourceList[vueapp.sourceName].schema ) {
                 if(s.getOptions) {
                     Vue.set(s, "options", await s.getOptions(null))
@@ -275,17 +275,21 @@
                     Vue.set(s, "options", [])
                 }
             };
-        }
+        }*/
 
         async function setOptions(evt){
             console.log("setOptions")
             const key = evt.target.name;
+            console.log(key)
+            console.log(vueapp.sourceList[vueapp.sourceName])
             const s = vueapp.sourceList[vueapp.sourceName].schema.find((e)=>(e.name === key));
+            console.log(s)
             if(s.getOptions) {
                 Vue.set(s, "options", await s.getOptions(null));
             } else {
                 Vue.set(s, "options", [])
             }
+            console.log(999, s.options)
         }
 
         function get_docs(collectionName) {
