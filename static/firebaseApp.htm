@@ -29,10 +29,9 @@
 <body> 
     <div id="vueapp">
         <div>
-            Collection: <input type="text" v-model="collectionName" list="collection">
-            <datalist id="collection"><option :value="opt" v-for="opt in Object.keys(schemaList)"></option></datalist>
-            Filter: <input type="text" v-model="filterName" list="filter">
-            <datalist id="filter"><option :value="opt" v-for="opt in (filter[collectionName] && Object.keys(filter[collectionName]))"></option></datalist>
+            Source: <input type="text" v-model="sourceName" list="source">
+            <datalist id="source"><option :value="opt" v-for="opt in Object.keys(sourceList)"></option></datalist>
+            Collection: <input type="text" v-model="collectionName" readonly="readonly">
             Limit: <input type="number" v-model="limit">
         </div>
         <div style="color:red">{{message}}</div>
@@ -141,78 +140,72 @@
                     measurementId: "G-L1PTCJS8T2"
                 },
                 firebaseSettings:{ timestampsInSnapshots: true },
-                collectionName:"kakeibo",
-                filterName:"kakeibo_all",
+
+                sourceName:"sampleKey",
                 limit:4000,
-                schemaList:{ // key = filterName
-                    sampleKey: [
-                        {name:"name", list:true}, 
-                        {name:"state", list:true}, 
-                        {name:"country", list:true}, 
-                        {name:"db_doc_id"}
-                    ],
-                    kakeibo: [
-                        {name:"date", list:true}, 
-                        {name:"himoku", list:true, getOptions: getOptions_himoku},
-                        {name:"utiwake", list:true, getOptions: getOptions_utiwake},
-                        {name:"biko", list:true}, 
-                        {name:"mark", list:true, getOptions: (obj)=>(["一時会計", "特別会計"])}, 
-                        {name:"income", list:true}, 
-                        {name:"outgo", list:true}, 
-                        {name:"account", list:true, getOptions: (obj)=>(["a", "b"])}, 
-                        {name:"category_FPlan"},
-                        {name:"account_add"},
-                        {name:"account_sub"},
-                        {name:"CREATE_TIME"},
-                    ],
-                    kakeibo_all:null,
-                    kakeibo_zandaka: [
-                        {name:"account", list:true}, 
-                        {name:"zandaka", list:true}, 
-                    ],
-                    kakeibo_zandaka_all:null,
-                    kakeibo_summary: [
-                        {name:"key1", list:true}, 
-                        {name:"key2", list:true}, 
-                        {name:"key3", list:true}, 
-                        {name:"value", list:true}
-                    ],
-                    kakeibo_summary_all:null,
-                    kakeibo_himoku: [
-                        {name:"key1", list:true}, 
-                        {name:"key2", list:true}, 
-                        {name:"key3"}, 
-                        {name:"value"}
-                    ],
-                    kakeibo_himoku_all:null,
-                },
-                schema: [],
-                filter: {
+
+                sourceList:{ // key = sourceName
                     sampleKey: {
-                        "id": function(arr) {return arr;},
+                        collectionName: "sampleKey",
+                        source: ()=>(get_search_docdata("sampleKey")),
+                        schema: [
+                            {name:"name", list:true}, 
+                            {name:"state", list:true}, 
+                            {name:"country", list:true}, 
+                            {name:"db_doc_id"}
+                        ],
                     },
                     kakeibo: {
-                        "": (a)=>(a),
-                        "id": (a)=>(a),
-                        kakeibo_all: (a)=>(sortByFields(a, ["date", "himoku", "utiwake"], [-1])),
+                        collectionName: "kakeibo",
+                        source:  ()=>(get_search_docdata("kakeibo").then((a)=>(sortByFields(a, ["date", "himoku", "utiwake"], [-1])))),
+                        schema: [
+                            {name:"date", list:true}, 
+                            {name:"himoku", list:true, getOptions: getOptions_himoku},
+                            {name:"utiwake", list:true, getOptions: getOptions_utiwake},
+                            {name:"biko", list:true}, 
+                            {name:"mark", list:true, getOptions: (obj)=>(["一時会計", "特別会計"])}, 
+                            {name:"income", list:true}, 
+                            {name:"outgo", list:true}, 
+                            {name:"account", list:true, getOptions: (obj)=>(get_docs("kakeibo").then( (r) => (myUniq(r.map(e=>e.data().account)).sort())))}, 
+                            {name:"category_FPlan"},
+                            {name:"account_add"},
+                            {name:"account_sub"},
+                            {name:"CREATE_TIME"},
+                        ],
                     },
                     kakeibo_zandaka: {
-                        "": (a)=>(a),
-                        "id": (a)=>(a),
-                        kakeibo_zandaka_all:  (a)=>(sortByFields(a, ["zandaka"], [-1])),
+                        collectionName: "kakeibo_zandaka",
+                        source:  ()=>(get_search_docdata("kakeibo_zandaka").then((a)=>(sortByFields(a, ["zandaka"], [-1])))),
+                        schema: [
+                            {name:"account", list:true}, 
+                            {name:"zandaka", list:true}, 
+                        ],
                     },
                     kakeibo_summary: {
-                        "": (a)=>(a),
-                        "id": (a)=>(a),
-                        kakeibo_summary_all:  (a)=>(sortByFields(a, ["key3", "key1", "key2"])),
+                        collectionName: "kakeibo_summary",
+                        suorce: ()=>(get_search_docdata("kakeibo_summary").then((a)=>(sortByFields(a, ["key3", "key1", "key2"])))),
+                        schema: [
+                            {name:"key1", list:true}, 
+                            {name:"key2", list:true}, 
+                            {name:"key3", list:true}, 
+                            {name:"value", list:true}
+                        ],
                     },
                     kakeibo_himoku: {
-                        "id": (a)=>(a),
-                        kakeibo_himoku_all: (a)=>(sortByFields(a, ["key1", "key2"])),
+                        collectionName: "kakeibo_himoku",
+                        source:  ()=>(get_search_docdata("kakeibo").then((a)=>(sortByFields(a, ["key1", "key2"])))),
+                        schema: [
+                            {name:"key1", list:true}, 
+                            {name:"key2", list:true}, 
+                            {name:"key3"}, 
+                            {name:"value"}
+                        ],
                     },
                 },
+                
+                schema: [],
+
                 config:{},
-                userAccountName:"",
                 displayConditionForm:false,
                 searchCondition:{},
                 docList:[],
@@ -240,58 +233,42 @@
                 detailNames: function () {
                     return this.schema;
                 },
+                collectionName: function() {
+                    return this.sourceList[this.sourceName]?.collectionName
+                },
             },
             watch: {
-                collectionName: async function(val){
+                sourceName: async function(val){
                     this.message = "processing..."
                     this.searchCondition = {}; 
                     this.docList = []; 
                     this.currentDoc = [];
                     this.schema = [];
                     this.displayConditionForm = false
-                    this.schema = await getSchema(this.collectionName, this.filterName); 
+                    this.schema = await getSchema(this.sourceName); 
                     this.message = ""
                 },
-                filterName: async function(val){
-                    this.message = "processing..."
-                    this.searchCondition = {}; 
-                    this.docList = []; 
-                    this.currentDoc = [];
-                    this.schema = [];
-                    this.displayConditionForm = false
-                    this.schema = await getSchema(this.collectionName, this.filterName); 
-                    this.message = ""
-                    //set_options();
-                }
             },
             mounted: async function() {
             },
         });
 
         // init
-        vueapp.schemaList.kakeibo_all = vueapp.schemaList.kakeibo;
-        vueapp.schemaList.kakeibo_zandaka_all = vueapp.schemaList.kakeibo_zandaka;
-        vueapp.schemaList.kakeibo_summary_all = vueapp.schemaList.kakeibo_summary;
-        vueapp.schemaList.kakeibo_himoku_all = vueapp.schemaList.kakeibo_himoku;
-        vueapp.schema = await getSchema(vueapp.collectionName, vueapp.filterName); 
+        vueapp.schema = await getSchema(vueapp.sourceName); 
 
                         
         function getOptions_himoku(obj) {
             return get_docs("kakeibo_himoku")
-                .then(r=>{
-                    return myUniq(r.map(e=>e.data().key1)).sort()
-                })
-        } 
+                .then( (r) => (myUniq(r.map(e=>e.data().key1)).sort()) );
+        }
         function getOptions_utiwake(obj) {
             return get_docs("kakeibo_himoku").then((r)=>{
-                //console.log("filter", r.filter((e)=>(e.data().key1 === vueapp.searchCondition.himoku[0])))
                 return myUniq(r.filter((e)=>(e.data().key1 === vueapp.searchCondition.himoku[0])).map(e=>e.data().key2)).sort()
             })
         } 
 
         async function set_options(){
-            const filter = vueapp.filterName;
-            for( const s of vueapp.schemaList[vueapp.filterName] ) {
+            for( const s of vueapp.sourceList[vueapp.sourceName].schema ) {
                 if(s.getOptions) {
                     Vue.set(s, "options", await s.getOptions(null))
                 } else {
@@ -303,8 +280,7 @@
         async function setOptions(evt){
             console.log("setOptions")
             const key = evt.target.name;
-            const filter = vueapp.filterName;
-            const s = vueapp.schemaList[vueapp.filterName].find((e)=>(e.name === key));
+            const s = vueapp.sourceList[vueapp.sourceName].schema.find((e)=>(e.name === key));
             if(s.getOptions) {
                 Vue.set(s, "options", await s.getOptions(null));
             } else {
@@ -312,80 +288,74 @@
             }
         }
 
-        async function get_docs(collectionName) {
+        function get_docs(collectionName) {
             const coll = firebase.firestore().collection(collectionName).limit(vueapp.limit);
-            const querySnapshot = await coll.get();
-            return querySnapshot.docs;
+            return coll.get().then((ss)=>(ss.docs));
+        }
+        function get_docdata(collectionName) {
+            return get_docs(collectionName).then((docs)=>(docs.map((d)=>(d.data()))));
         }
 
         async function onclick_condition(){
             if( Object.keys(vueapp.searchCondition).length === 0 && this.schema.length > 0 ) {
-                console.log("set condition", this.schema)
+                console.log("opening condition panel", this.schema)
                 const ent = this.schema.map((e)=>([e.name, ["",""]]));
                 vueapp.searchCondition = Object.fromEntries(ent)
             }
             vueapp.displayConditionForm = true; 
-            
-            /*
-            let ss= await firebase.firestore().collection("kakei").limit(4000).get();
-            console.log(ss.count)
-            ss.forEach(doc =>{
-                const dd = doc.data();
-                console.log(dd)
-                const ud = getKakeiboUpdate(dd);
-                console.log(ud)
-            })*/
+        }
 
+        async function get_search_docdata(collectionName) {
+            const conditionEqual = Object.entries(vueapp.searchCondition).filter((e)=>(e[1][0] !== "" && e[1][1] === ""))
+            const conditionUnEqual = Object.entries(vueapp.searchCondition).filter((e)=>(e[1][0] !== "" && e[1][1] !== ""))
+            const conditionRegExp = Object.entries(vueapp.searchCondition).filter((e)=>(e[1][0] === "" && e[1][1] !== ""))
+            let coll = firebase.firestore().collection(collectionName).limit(vueapp.limit); // limit for preventing error lock
+            // set server-side filtering
+            conditionEqual.forEach((e)=>{
+                const k = e[0]
+                const v = e[1]
+                coll = coll.where(k, "==", v[0] );
+                console.log("add db filter condition: " + k + " === " + v[0])
+            });
+            const p = conditionUnEqual.pop();
+            if(p) {
+                coll = coll.where(p[0], ">=", p[1][0] ).where(p[0], "<=", p[1][1] );
+                console.log("add db filter condition: unequal for " + p[0])
+            }
+            // query
+            const querySnapshot = await coll.get();
+            let docs = querySnapshot.docs.map((d)=>({docid:d.id, data:d.data()}));
+            // create doc list
+            const docList = [];
+            docs.forEach((doc) => {
+                const cond1 = conditionRegExp.every((e)=>{
+                    const name = e[0]
+                    const value = e[1]
+                    return (String(doc.data[name]).match(value[1]));
+                });
+                const cond2 = conditionUnEqual.every((e)=>{
+                    const name = e[0]
+                    const value = e[1]
+                    return (doc.data[name] >= value[0] && doc.data[name] <= value[1]);
+                });
+                if(cond1 && cond2) {
+                    //console.log(doc.docid, " => ", doc.data);
+                    docList.push(doc);
+                }
+            });
+
+            // set message
+            vueapp.searchRelustMessage = `result ${docList.length} (db result ${querySnapshot.size}, limit ${vueapp.limit}) `
+                    + (querySnapshot.size === vueapp.limit ? " ERROR: search results exceeded the limit " : "");
+
+            return docList;
         }
 
         async function onclick_search(event) {
-            console.log(vueapp.searchCondition)
+            console.log("searching by condition", vueapp.searchCondition)
             vueapp.message = "processing..."
             try {
-                const conditionEqual = Object.entries(vueapp.searchCondition).filter((e)=>(e[1][0] !== "" && e[1][1] === ""))
-                const conditionUnEqual = Object.entries(vueapp.searchCondition).filter((e)=>(e[1][0] !== "" && e[1][1] !== ""))
-                const conditionRegExp = Object.entries(vueapp.searchCondition).filter((e)=>(e[1][0] === "" && e[1][1] !== ""))
-                let coll = firebase.firestore().collection(vueapp.collectionName).limit(vueapp.limit); // limit for preventing error lock
-                // set server-side filtering
-                conditionEqual.forEach((e)=>{
-                    const k = e[0]
-                    const v = e[1]
-                    coll = coll.where(k, "==", v[0] );
-                    console.log("add condition: " + k + " === " + v[0])
-                });
-                const p = conditionUnEqual.pop();
-                if(p) {
-                    coll = coll.where(p[0], ">=", p[1][0] ).where(p[0], "<=", p[1][1] );
-                }
-                // query
-                const querySnapshot = await coll.get();
-                console.log(querySnapshot.size)
-                let docs = querySnapshot.docs.map((d)=>({docid:d.id, data:d.data()}));
-                // apply custom filter
-                if(vueapp.filterName) {
-                    docs = vueapp.filter[vueapp.collectionName][vueapp.filterName](docs);
-                    //docs = docs.sort((a,b)=>(a.date > b.date ? 1 : a.date < b.date ? -1 : 0))
-                }
-                // create doc list
-                vueapp.docList = [];
-                docs.forEach((doc) => {
-                    const cond1 = conditionRegExp.every((e)=>{
-                        const name = e[0]
-                        const value = e[1]
-                        return (String(doc.data[name]).match(value[1]));
-                    });
-                    const cond2 = conditionUnEqual.every((e)=>{
-                        const name = e[0]
-                        const value = e[1]
-                        return (doc.data[name] >= value[0] && doc.data[name] <= value[1]);
-                    });
-                    if(cond1 && cond2) {
-                        //console.log(doc.docid, " => ", doc.data);
-                        vueapp.docList.push(doc);
-                    }
-                });
-                vueapp.searchRelustMessage = vueapp.docList.length + " /  " + querySnapshot.size + " ( limit " + vueapp.limit + ")"
-                                            + (querySnapshot.size === vueapp.limit ? "  ERROR: search results exceeded the limit" : "")
+                vueapp.docList = await vueapp.sourceList[vueapp.sourceName].source();
                 vueapp.displayConditionForm = false;
             } catch(error) {
                 console.log("Error getting documents: ", error);
@@ -451,23 +421,15 @@
             return arr.sort(compare);
         }
 
-        async function getSchema(collectionName, filterName){
-            const name = filterName ? filterName : collectionName;
-            if( vueapp.schemaList[name] ) {
-                return vueapp.schemaList[name];
-            } else {
+        async function getSchema(sourceName){
+            const source = vueapp.sourceList[sourceName]
+            if( source?.schema ) {
+                return source.schema;
+            } else if( source ) {
                 // auto create
-                const ss = await firebase.firestore().collection(collectionName).limit(1).get();
-                console.log(ss)
-                let ds = ss.docs.map((d)=>(d.data()));
-                console.log(ds)
-                if(ds.length === 0) { console.log("cannot get data of "+collectionName+","+filterName); return []; }
-                if(filterName) {
-                    if(vueapp.filter[collectionName][filterName]) {
-                        ds = vueapp.filter[collectionName][filterName](ds);
-                    }
-                }
-                console.log(ds)
+                console.log("automatically creating schema...")
+                const ds = await source.source();
+                if(ds.length === 0) { console.log("cannot get data of "+sourceName); return []; }
                 const sc = Object.keys(ds[0]).map((k)=>({name:k, list:true}));
                 return sc;
             }
