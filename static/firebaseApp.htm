@@ -42,14 +42,14 @@
             Search Conditions
             <form>
                 <table>
-                    <tr v-for="([key, value]) in Object.entries(this.searchCondition)">
+                    <tr v-for="([key, value]) in Object.entries(searchCondition)">
                         <th>{{key}}</th>
                         <td>
-                            <input type="text" :name="key" v-model="value[0]" :list="key" @focus="setOptions"><!--find((e)=>(e.name === key)) -->
+                            <input type="text" class="searchCondition_inp" :name="key" v-model="value[0]" :list="key" @focus="setOptions"><!--find((e)=>(e.name === key)) -->
                             <datalist :id="key"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === key)).options)"></option></datalist>
                         </td>
                         <td>
-                            <input type="text" :name="key" v-model="value[1]" :list="key" @focus="setOptions">
+                            <input type="text" class="searchCondition_inp" :name="key" v-model="value[1]" :list="key" @focus="setOptions">
                         </td>
                     </tr>
                 </table>
@@ -67,15 +67,15 @@
         </div>
         
         <!-- Deltailed/Edit -->
-        <div v-if="Object.keys(this.currentDoc).length > 0" class="panel modal_window">
-            <span v-if="this.currentDoc.docid">Edit Item</span>
-            <span v-else="this.currentDoc.docid">Add Item</span>
+        <div v-if="Object.keys(this.detailView).length > 0" class="panel modal_window">
+            <span v-if="this.detailView.docid">Edit Item</span>
+            <span v-else="this.detailView.docid">Add Item</span>
             <form>
                 <table>
                     <tr v-for="n in detailNames">
                         <th>{{n.name}}</th>
                         <td>
-                            <input type="text" :name="n.name" v-model="currentDoc.data[n.name]" :list="n.name" @focus="setOptions">
+                            <input type="text" class="detailed_inp" :name="n.name" v-model="detailView.data[n.name]" :list="n.name" @focus="setOptions">
                             <!--- same ID of datalist ?????? -->
                             <datalist :id="n.name"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === n.name)).options)"></option></datalist> 
                         </td>
@@ -130,6 +130,7 @@
         var vueapp = new Vue({
             el: '#vueapp',
             data: {
+                // ---- Configs ------
                 firebaseConfig : {
                     apiKey: "AIzaSyAzC5upkkaduxsYhkGqukXGItb_x00gjcY",
                     authDomain: "fresh-catwalk-335010.firebaseapp.com",
@@ -140,9 +141,6 @@
                     measurementId: "G-L1PTCJS8T2"
                 },
                 firebaseSettings:{ timestampsInSnapshots: true },
-
-                sourceName:"sampleKey",
-                limit:4000,
 
                 sourceList:{ // key = sourceName
                     sampleKey: {
@@ -203,15 +201,21 @@
                     },
                 },
 
-                schema: [],
-
                 config:{},
-                displayConditionForm:false,
-                searchCondition:{},
-                docList:[],
-                currentDoc:{},
+
+                // --- data on page ------
+                sourceName:"sampleKey",
+                limit:4000,
+                searchCondition:{},  // {fieldName1:[value1, value2], ...}
+                docList:[],          // [{docid:id, data:{field1:value1, ...}}, ...]
+                detailView:{},       // an element of docList
                 message:"",
                 searchRelustMessage:"",
+
+                // ---- others ------
+                schema: [],
+
+                displayConditionForm:false,
                 test:{},
             },
             methods: {
@@ -242,8 +246,7 @@
                     this.message = "processing..."
                     this.searchCondition = {}; 
                     this.docList = []; 
-                    this.currentDoc = [];
-                    this.schema = [];
+                    this.detailView = {};
                     this.displayConditionForm = false
                     this.schema = await getSchema(this.sourceName); 
                     this.message = ""
@@ -258,38 +261,30 @@
 
                         
         function getOptions_himoku(obj) {
-            return get_docs("kakeibo_himoku")
-                .then( (r) => (myUniq(r.map(e=>e.data().key1)).sort()) );
+            return get_docdata("kakeibo_himoku").then( (r) => (myUniq(r.map(e=>e.key1)).sort()) );
         }
-        function getOptions_utiwake(obj) {
+        function getOptions_utiwake(evt) {
+            const sc = evt.target.className.split(/ +/).includes("searchCondition_inp");
+            const himoku = sc ? vueapp.searchCondition.himoku[0] : vueapp.detailView.data.himoku
+            console.log("himoku value", himoku)
             return get_docs("kakeibo_himoku").then((r)=>{
-                return myUniq(r.filter((e)=>(e.data().key1 === vueapp.currentDoc.himoku)).map(e=>e.data().key2)).sort()  // TODO: for searchcondition
+                return myUniq(r.filter((e)=>(e.data().key1 === himoku)).map(e=>e.data().key2)).sort()
             })
         } 
-
-        /*async function set_options(){
-            for( const s of vueapp.sourceList[vueapp.sourceName].schema ) {
-                if(s.getOptions) {
-                    Vue.set(s, "options", await s.getOptions(null))
-                } else {
-                    Vue.set(s, "options", [])
-                }
-            };
-        }*/
 
         async function setOptions(evt){
             console.log("setOptions")
             const key = evt.target.name;
             console.log(key)
             console.log(vueapp.sourceList[vueapp.sourceName])
-            const s = vueapp.sourceList[vueapp.sourceName].schema.find((e)=>(e.name === key));
+            const s = vueapp.schema.find((e)=>(e.name === key));
             console.log(s)
             if(s.getOptions) {
-                Vue.set(s, "options", await s.getOptions(null));
+                Vue.set(s, "options", await s.getOptions(evt));
             } else {
                 Vue.set(s, "options", [])
             }
-            console.log(999, s.options)
+            console.log("options", s.options)
         }
 
         function get_docs(collectionName) {
@@ -370,7 +365,7 @@
 
 
         async function onclick_add(){
-            vueapp.currentDoc = {
+            vueapp.detailView = {
                 data:Object.fromEntries(this.detailNames.map((e)=>([e,""]))),
                 docid:null
             }
@@ -378,7 +373,7 @@
 
         function onclick_edit(index){
             console.log("edit "+index)
-            vueapp.currentDoc = vueapp.docList[index];
+            vueapp.detailView = vueapp.docList[index];
         }
 
         function onclick_delete(index){
@@ -390,18 +385,18 @@
         }
 
         async function onclick_submit(event){
-            const obj = vueapp.currentDoc.data;
-            if( vueapp.currentDoc.docid ) { // edit
-                await firebase.firestore().collection(vueapp.collectionName).doc(vueapp.currentDoc.docid).set(obj);
+            const obj = vueapp.detailView.data;
+            if( vueapp.detailView.docid ) { // edit
+                await firebase.firestore().collection(vueapp.collectionName).doc(vueapp.detailView.docid).set(obj);
             } else { // add
                 await firebase.firestore().collection(vueapp.collectionName).add(obj);
             }
             onclick_search();
-            vueapp.currentDoc = {};
+            vueapp.detailView = {};
         } 
 
         function onclick_close(event){
-            vueapp.currentDoc = {};
+            vueapp.detailView = {};
         } 
 
 
@@ -426,7 +421,7 @@
         }
 
         async function getSchema(sourceName){
-            const source = vueapp.sourceList[sourceName]
+            const source = vueapp.sourceList[sourceName];
             if( source?.schema ) {
                 return source.schema;
             } else if( source ) {
@@ -434,7 +429,7 @@
                 console.log("automatically creating schema...")
                 const ds = await source.source();
                 if(ds.length === 0) { console.log("cannot get data of "+sourceName); return []; }
-                const sc = Object.keys(ds[0]).map((k)=>({name:k, list:true}));
+                const sc = Object.keys(ds[0]).sort().map((k)=>({name:k, list:true}));
                 return sc;
             }
         }
