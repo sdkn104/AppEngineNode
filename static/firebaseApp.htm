@@ -155,7 +155,7 @@
                     },
                     kakeibo: {
                         collectionName: "kakeibo",
-                        source:  ()=>(get_search_docdata("kakeibo").then((a)=>(sortByFields(a, ["date", "himoku", "utiwake"], [-1])))),
+                        source:  ()=>(get_search_docdata("kakeibo").then((a)=>(sortByFields(a, ["date", "ID", "himoku"], [-1,-1])))),
                         schema: [
                             {name:"date", list:true}, 
                             {name:"himoku", list:true, getOptions: getOptions_himoku},
@@ -164,11 +164,16 @@
                             {name:"mark", list:true, getOptions: (obj)=>(["一時会計", "特別会計"])}, 
                             {name:"income", list:true}, 
                             {name:"outgo", list:true}, 
+                            {name:"shusi"}, 
                             {name:"account", list:true, getOptions: (obj)=>(get_docs("kakeibo").then( (r) => (myUniq(r.map(e=>e.data().account)).sort())))}, 
                             {name:"category_FPlan"},
                             {name:"account_add"},
-                            {name:"account_sub"},
+                            {name:"account_sub", list:true, getOptions: (obj)=>(get_docs("kakeibo").then( (r) => (myUniq(r.map(e=>e.data().account)).sort())))},
+                            {name:"account_all", list:true, getOptions: (obj)=>(get_docs("kakeibo").then( (r) => (myUniq(r.map(e=>e.data().account)).sort())))},
+                            {name:"accum_add", list:true},
+                            {name:"accum_sub", list:true},
                             {name:"CREATE_TIME"},
+                            {name:"ID"},
                         ],
                     },
                     kakeibo_zandaka: {
@@ -204,7 +209,7 @@
                 config:{},
 
                 // --- data on page ------
-                sourceName:"sampleKey",
+                sourceName:"kakeibo",
                 limit:4000,
                 searchCondition:{},  // {fieldName1:[value1, value2], ...}
                 docList:[],          // [{docid:id, data:{field1:value1, ...}}, ...]
