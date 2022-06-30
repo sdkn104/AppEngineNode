@@ -75,7 +75,11 @@
                     <tr v-for="n in detailNames">
                         <th>{{n.name}}</th>
                         <td>
-                            <input type="text" class="detailed_inp" :name="n.name" v-model="detailView.data[n.name]" :list="n.name" @focus="setOptions">
+                            <!--- this.schema?.find((e)=>(e.name===n.name))?.type === 'number' -->
+                            <input v-if="this.schema?.find((e)=>(e.name===n.name))?.type === 'number'" 
+                                type="text" class="detailed_inp" :name="n.name" v-model.number="detailView.data[n.name]" :list="n.name" @focus="setOptions">
+                            <input v-else
+                                type="text" class="detailed_inp" :name="n.name" v-model="detailView.data[n.name]" :list="n.name" @focus="setOptions">
                             <!--- same ID of datalist ?????? -->
                             <datalist :id="n.name"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === n.name)).options)"></option></datalist> 
                         </td>
@@ -162,16 +166,16 @@
                             {name:"utiwake", list:true, getOptions: getOptions_utiwake},
                             {name:"biko", list:true}, 
                             {name:"mark", list:true, getOptions: (obj)=>(["一時会計", "特別会計"])}, 
-                            {name:"income", list:true}, 
-                            {name:"outgo", list:true}, 
-                            {name:"shusi"}, 
+                            {name:"income", list:true, type:"number"}, 
+                            {name:"outgo", list:true, type:"number"}, 
+                            {name:"shusi", type:"number"}, 
                             {name:"account", list:true, getOptions: (obj)=>(get_docs("kakeibo").then( (r) => (myUniq(r.map(e=>e.data().account)).sort())))}, 
                             {name:"category_FPlan"},
                             {name:"account_add"},
                             {name:"account_sub", list:true, getOptions: (obj)=>(get_docs("kakeibo").then( (r) => (myUniq(r.map(e=>e.data().account)).sort())))},
                             {name:"account_all", list:true, getOptions: (obj)=>(get_docs("kakeibo").then( (r) => (myUniq(r.map(e=>e.data().account)).sort())))},
-                            {name:"accum_add", list:true},
-                            {name:"accum_sub", list:true},
+                            {name:"accum_add", list:true, type:"number"},
+                            {name:"accum_sub", list:true, type:"number"},
                             {name:"CREATE_TIME"},
                             {name:"ID"},
                         ],
