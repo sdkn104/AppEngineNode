@@ -75,11 +75,13 @@
                     <tr v-for="n in detailNames">
                         <th>{{n.name}}</th>
                         <td>
-                            <!--- this.schema?.find((e)=>(e.name===n.name))?.type === 'number' -->
+                            <input type="text" class="detailed_inp" :name="n.name" v-model="detailView.data[n.name]" :list="n.name" @focus="setOptions">
+                            <!--
                             <input v-if="this.schema?.find((e)=>(e.name===n.name))?.type === 'number'" 
                                 type="text" class="detailed_inp" :name="n.name" v-model.number="detailView.data[n.name]" :list="n.name" @focus="setOptions">
                             <input v-else
                                 type="text" class="detailed_inp" :name="n.name" v-model="detailView.data[n.name]" :list="n.name" @focus="setOptions">
+                            -->
                             <!--- same ID of datalist ?????? -->
                             <datalist :id="n.name"><option :value="opt" v-for="opt in (schema.find((e)=>(e.name === n.name)).options)"></option></datalist> 
                         </td>
@@ -323,12 +325,22 @@
                 const k = e[0]
                 const v = e[1]
                 coll = coll.where(k, "==", v[0] );
-                console.log("add db filter condition: " + k + " === " + v[0])
+                console.log("add db filter condition: " + k + " == " + v[0])
             });
-            const p = conditionUnEqual.pop();
-            if(p) {
-                coll = coll.where(p[0], ">=", p[1][0] ).where(p[0], "<=", p[1][1] );
-                console.log("add db filter condition: unequal for " + p[0])
+            if( conditionEqual.length === 0 ) {
+                const p = conditionUnEqual.pop();
+                if(p) {
+                    let lower = p[1][0]
+                    let upper = p[1][1]
+                    if( vueapp.schema?.find((e)=>(e.name===p[0]))?.type === 'number' ) {
+                        lower = Number(lower)
+                        upper = Number(upper)
+                    }
+                    console.log(typeof lower)
+                    console.log(typeof upper)
+                    coll = coll.where(p[0], ">=", lower ).where(p[0], "<=", upper );
+                    console.log("add db filter condition: unequal for " + p[0])
+                }
             }
             // query
             const querySnapshot = await coll.get();
