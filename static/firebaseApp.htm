@@ -29,6 +29,12 @@
 <body> 
     <div id="vueapp">
         <div>
+            <button @click="onclick_login">ログイン</button>
+            <span>{{currentUser?.displayName}} {{currentUser?.email}}</span>
+            <button @click="onclick_logout">ログアウト</button>
+        </div>
+        <br>
+        <div>
             Source: <input type="text" v-model="sourceName" list="source">
             <datalist id="source"><option :value="opt" v-for="opt in Object.keys(sourceList)"></option></datalist>
             Collection: <input type="text" v-model="collectionName" readonly="readonly">
@@ -125,6 +131,12 @@
     <!-- firestore -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <!-- firebae authentication -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <!--
+    <script src="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.css" />
+    -->
 
     <script type="module">
 
@@ -214,6 +226,8 @@
 
                 config:{},
 
+                currentUser: null,
+
                 // --- data on page ------
                 sourceName:"kakeibo",
                 limit:4000,
@@ -230,6 +244,8 @@
                 test:{},
             },
             methods: {
+                onclick_login: onclick_login,
+                onclick_logout: onclick_logout,
                 onclick_condition: onclick_condition,
                 onclick_search: onclick_search,
                 onclick_add: onclick_add,
@@ -270,7 +286,30 @@
         // init
         vueapp.schema = await getSchema(vueapp.sourceName); 
 
+
                         
+        function onclick_login() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).then(result => {
+                const user = result.user
+                console.log("user", user)
+                vueapp.currentUser = user.uid;
+            }).catch(function(err) {
+                console.log("login error")
+                console.error(err)
+                // エラー処理
+            })
+        }
+        function onclick_logout() {
+            firebase.auth().signOut().then(result => {
+                console.log("logout success")
+                vueapp.currentUser = null;
+            }).catch(function(err) {
+                console.log("logout error")
+                console.error(err)
+            })
+        }
+
         function getOptions_himoku(obj) {
             return get_docdata("kakeibo_himoku").then( (r) => (myUniq(r.map(e=>e.key1)).sort()) );
         }
@@ -549,8 +588,19 @@
         }
         //const analytics = getAnalytics(app);
         firebase.firestore().settings(vueapp.firebaseSettings);
-
         
+
+        // init --- to be written in mounted
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                console.log('login', user);
+                vueapp.currentUser = user;
+            } else {
+                console.log('logout');
+                vueapp.currentUser = null;
+            }
+        });
+
         /*
         const db = firebase.firestore();
         db.collection(vueapp.collectionName).doc("mydoc").set({
