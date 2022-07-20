@@ -5,13 +5,19 @@
   <title>Kakeibo</title>
 </head>
 <body> 
-    <div><a href="firebaseApp.htm">kakeibo...</a></div>
-    <div><a href="https://us-central1-fresh-catwalk-335010.cloudfunctions.net/updateKakeiboZandaka">update zandaka</a></div>
+    <div><a href="firebaseApp.htm">kakeibo (old)...</a></div>
+    <div><a href="kakeibo_vue">kakeibo...</a></div>
+    <div><a href="#"  onclick="onclickZandaka()">update zandaka</a> <input type="text" id="at" placeholder="yyyy/mm/dd"></div>
     <div><a href="https://us-central1-fresh-catwalk-335010.cloudfunctions.net/updateKakeiboSummary">update summary</a></div>
     <div><a href="https://us-central1-fresh-catwalk-335010.cloudfunctions.net/updateKakeiboDB">update DB</a></div>
     <div><a href="https://us-central1-fresh-catwalk-335010.cloudfunctions.net/updateKakeiboAccum">update Accum</a></div>
     <div><a href="https://fresh-catwalk-335010.an.r.appspot.com/sadakane/imports">Imports...</a></div>
-
+    <script>
+        function onclickZandaka() {
+            const at = document.getElementById("at").value || "";
+            window.open("https://us-central1-fresh-catwalk-335010.cloudfunctions.net/updateKakeiboZandaka?at=" + at)
+        }
+    </script>
     
 </body>
 </html>
