@@ -5,12 +5,22 @@
   <title>Kakeibo</title>
 </head>
 <body> 
-    <div><a href="firebaseApp.htm">kakeibo (old)...</a></div>
     <div><a href="kakeibo_vue">kakeibo...</a></div>
-    <div><a href="#"  onclick="onclickZandaka()">update zandaka</a> <input type="text" id="at" placeholder="yyyy/mm/dd"></div>
-    <div><a href="https://us-central1-fresh-catwalk-335010.cloudfunctions.net/updateKakeiboSummary">update summary</a></div>
-    <div><a href="https://us-central1-fresh-catwalk-335010.cloudfunctions.net/updateKakeiboDB">update DB</a></div>
-    <div><a href="https://us-central1-fresh-catwalk-335010.cloudfunctions.net/updateKakeiboAccum">update Accum</a></div>
+    <div>
+        <a href="#"  onclick="onclickZandaka()">update zandaka</a> 
+        <input type="text" id="at" placeholder="yyyy/mm/dd">
+    </div>
+    <div><form target="_blank" action="https://us-central1-fresh-catwalk-335010.cloudfunctions.net/updateKakeiboSummary">
+        <input type="submit" value="update summary">
+        <input type="text" name="key1" value="category_FPlan">
+        <input type="text" name="key2" value="himoku">
+        <input type="text" name="day1" value="date">
+        <input type="text" name="dayFrom" value="1900/01/01">
+        <input type="text" name="dayTo" value="2099/12/31">
+        <input type="number" name="dayWidth" value="4">
+    </form></div>
+    <div><a href="https://us-central1-fresh-catwalk-335010.cloudfunctions.net/recalculateKakeiboDB">recalculate DB</a></div>
+    <div><a href="https://us-central1-fresh-catwalk-335010.cloudfunctions.net/updateKakeiboAccum">update Accum xxxx</a></div>
     <div><a href="https://fresh-catwalk-335010.an.r.appspot.com/sadakane/imports">Imports...</a></div>
     <script>
         function onclickZandaka() {
