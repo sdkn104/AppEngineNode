@@ -179,7 +179,7 @@ const myGmailWeb = {};
       } else {
         base64urlMailBody = message.result.payload.body.data;
       }
-      const base64mailBody = base64urlMailBody.replace("-", "+").replace("_", "/")
+      const base64mailBody = base64urlMailBody.replace(/-/g, "+").replace(/_/g, "/")
       console.log(base64mailBody)
       console.log(atob(base64mailBody))
       //result.Body = Buffer.from(base64mailBody, 'base64').toString(); //メール本文はBase64になってるので変
