@@ -1,4 +1,4 @@
-ふ// https://developers.google.com/gmail/api/quickstart/js?hl=ja
+// https://developers.google.com/gmail/api/quickstart/js?hl=ja
 
 const myGmailWeb = {};
 
