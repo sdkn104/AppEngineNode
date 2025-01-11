@@ -53,7 +53,7 @@ const myGmailWeb = {};
       /**
        *  Sign in the user upon button click.
        */
-      myGmailWeb.handleAuthClick = function () {
+      myGmailWeb.auth = function () {
         tokenClient.callback = async (resp) => {
           if (resp.error !== undefined) {
             throw (resp);
@@ -74,7 +74,7 @@ const myGmailWeb = {};
       /**
        *  Sign out the user upon button click.
        */
-      myGmailWeb.handleSignoutClick = function() {
+      myGmailWeb.signout = function() {
         const token = gapi.client.getToken();
         if (token !== null) {
           google.accounts.oauth2.revoke(token.access_token);
@@ -93,7 +93,7 @@ const myGmailWeb = {};
             'userId': 'me',
           });
         } catch (err) {
-          document.getElementById('content').innerText = err.message;
+          throw err.message;
           return;
         }
         const labels = response.result.labels;
