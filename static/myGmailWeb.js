@@ -78,6 +78,7 @@ const myGmailWeb = {};
    */
   myGmailWeb.signout = function() {
     const token = gapi.client.getToken();
+    console.log(token);
     if (token !== null) {
       google.accounts.oauth2.revoke(token.access_token);
       gapi.client.setToken('');
