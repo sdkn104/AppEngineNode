@@ -33,10 +33,7 @@ function onclick_open(){
     app.messageList = [];
     app.boxes = [];
     app.message = "";
-    fetch_json(api_url, {
-            command: "open", 
-            userAccountName:app.userAccountName, 
-    })
+    myGmailWeb.listLabels()
     .then(boxes => {
         console.log(boxes)
         app.boxes = boxes;
