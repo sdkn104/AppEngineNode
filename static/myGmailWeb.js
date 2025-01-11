@@ -1,25 +1,10 @@
-
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Gmail API Quickstart</title>
-    <meta charset="utf-8" />
-  </head>
-  <body>
-    <p>Gmail API Quickstart</p>
-
-    <!--Add buttons to initiate auth sequence and sign out-->
-    <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
-    <button id="signout_button" onclick="handleSignoutClick()">Sign Out</button>
-
-    <pre id="content" style="white-space: pre-wrap;"></pre>
-
-    <script type="text/javascript">
       /* exported gapiLoaded */
       /* exported gisLoaded */
       /* exported handleAuthClick */
       /* exported handleSignoutClick */
+const myGmailWeb = {};
 
+{
       // TODO(developer): Set to client ID and API key from the Developer Console
       const CLIENT_ID = '656639514271-d5kjb0i7nffu4le1a93lan08pqr45rq2.apps.googleusercontent.com';
       const API_KEY = 'AIzaSyAXBdTJP_R4vgF9mBtFTvFKCgDpApPR2X0';
@@ -41,15 +26,15 @@
       /**
        * Callback after api.js is loaded.
        */
-      function gapiLoaded() {
+      myGmailWeb.gapiLoaded = function () {
         gapi.load('client', initializeGapiClient);
-      }
+      };
 
       /**
        * Callback after the API client is loaded. Loads the
        * discovery doc to initialize the API.
        */
-      async function initializeGapiClient() {
+       async function initializeGapiClient() {
         await gapi.client.init({
           apiKey: API_KEY,
           discoveryDocs: [DISCOVERY_DOC],
@@ -61,7 +46,7 @@
       /**
        * Callback after Google Identity Services are loaded.
        */
-      function gisLoaded() {
+      myGmailWeb.gisLoaded = function gisLoaded() {
         tokenClient = google.accounts.oauth2.initTokenClient({
           client_id: CLIENT_ID,
           scope: SCOPES,
@@ -69,7 +54,7 @@
         });
         gisInited = true;
         maybeEnableButtons();
-      }
+      };
 
       /**
        * Enables user interaction after all libraries are loaded.
@@ -142,8 +127,8 @@
             'Labels:\n');
         document.getElementById('content').innerText = output;
       }
-    </script>
-    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
-  </body>
-</html>
+}
+
+    //<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    //<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
