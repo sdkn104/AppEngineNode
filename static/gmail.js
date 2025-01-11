@@ -47,6 +47,7 @@ function onclick_box(box) {
     app.messageList = [];
     app.message = "processing..."
     //console.log(box)
+    
     fetch_json(api_url, {
         command:"list-messages", 
         userAccountName:app.userAccountName, 
