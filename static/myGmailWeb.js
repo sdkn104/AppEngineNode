@@ -117,7 +117,7 @@ myGmailWeb.sendMail = async function (user = "sdkn104home", to, subject, message
         const userProfile = await gmail.users.getProfile({userId:"me"});
         const myEmailAddress = userProfile.data.emailAddress;
         const raw = createMail({to:to, from:myEmailAddress, subject:subject, message:message});
-        const sentMsg = await gmail.users.messages.send({
+        const sentMsg = await gapi.client.gmail.users.messages.send({
             userId: "me",
             requestBody: {
                 raw,
@@ -133,32 +133,12 @@ myGmailWeb.sendMail = async function (user = "sdkn104home", to, subject, message
 // Send Alert Mail
 myGmailWeb.sendAlertMail = function (subject, message_text) {
     sendMail("sdkn104home", "sdkn104@yahoo.co.jp;sdkn104@gmail.com", subject, message_text)
-}
-
-// return label list or {error:xxx}
-myGmailWeb.listLabels = async function (user = "sdkn104home") {
-    try {   
-        const oAuth2Client = await getAuthrizedClient(user);
-        const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
-        const userProfile = await gmail.users.getProfile({userId:"me"});
-        const res = await gmail.users.labels.list({
-                userId: 'me',
-        });
-        //console.log(res.data.labels)    
-        return res.data.labels;
-    } catch(err){
-        console.log(err)
-        return {error:err.stack || err.toString()}        
-    }
-}
+};
 
 // return message list or {error:xxx}
-myGmailWeb.listMessages = async function (user = "sdkn104home", labelIds = [], messageCount = 10) {
+myGmailWeb.listMessages = async function (labelIds = [], messageCount = 100) {
     //console.log(labelIds)
-    try {
-        const oAuth2Client = await getAuthrizedClient(user);
-        const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
-        const res = await gmail.users.messages.list({
+        const res = await gapi.client.gmail.users.messages.list({
                 userId: 'me',
                 labelIds: labelIds,
                 maxResults: messageCount,
@@ -170,10 +150,9 @@ myGmailWeb.listMessages = async function (user = "sdkn104home", labelIds = [], m
         let results = [];
         for(let msg of res.data.messages){   
             let result = {};
-            try {
                 const topid = msg.id;
                 //console.log(`- ${topid}`);
-                const message = await gmail.users.messages.get({userId:'me', id:topid});
+                const message = await gapi.client.gmail.users.messages.get({userId:'me', id:topid});
                 const headers = message.data.payload.headers;
                 //console.log("-------------------------")
                 //console.log(headers)
@@ -191,51 +170,25 @@ myGmailWeb.listMessages = async function (user = "sdkn104home", labelIds = [], m
                 } else {
                     base64mailBody = message.data.payload.body.data;
                 }
-                result.Body = Buffer.from(base64mailBody, 'base64').toString(); //メール本文はBase64になってるので変換
-            } catch(err){
-                console.log(err.stack || err.toString())   
-                result.Body = result.Body + "\n\n---- Error Occur in reading this message -----\n" + (err.stack || err.toString())                             
-            } finally {
+                result.Body = Buffer.from(base64mailBody, 'base64').toString(); //メール本文はBase64になってるので変
                 results.push(result)
-            }
         }
         //console.log(results);
         return results;
-    } catch(err){
-        console.log(err)
-        return {error:err.stack || err.toString()}        
     }
 }
 
 
 // delete message 
-myGmailWeb.deleteMessage = async function (user = "sdkn104home", msgid) {
+myGmailWeb.deleteMessage = async function (msgid) {
     console.log(msgid)
-    try {
-        const oAuth2Client = await getAuthrizedClient(user);
-        const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
-        let res = await gmail.users.messages.delete({
+        const res = await gapi.client.gmail.users.messages.delete({
             userId: "me",
             id: msgid,
         });
         console.log(res);
-        return {status:"OK"};
-    } catch(err){
-        console.log(err)
-        return {error:err.stack || err.toString()}        
-    }
+        return res;
 }
-
-
-      myGmailWeb.listMessages = async function (labelIds = [], messageCount = 100) {
-        const response = await gapi.client.gmail.users.messages.list({
-            'userId': 'me',
-            'labelIds': labelIds,
-            'maxResults': messageCount
-        });
-        const messages = response.result.messages;
-        return messages
-      };
 
     //<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
     //<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
