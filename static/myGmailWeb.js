@@ -160,6 +160,8 @@ const myGmailWeb = {};
         id: topid
       });
       console.log(message)
+      try {
+        
       const headers = message.result.payload.headers;
       //console.log("-------------------------")
       //console.log(headers)
@@ -184,6 +186,12 @@ const myGmailWeb = {};
         Array.from(atob(base64mailBody)).map((s) => s.charCodeAt(0)),
       );
       result.Body = new TextDecoder().decode(utf8Array);
+      
+      } catch {
+        result.Subject = "error."
+      }
+      
+      
       results.push(result)
     }
     //console.log(results);
