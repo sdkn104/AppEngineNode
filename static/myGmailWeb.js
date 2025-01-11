@@ -160,7 +160,7 @@ const myGmailWeb = {};
         id: topid
       });
       console.log(message)
-      const headers = message.data.payload.headers;
+      const headers = message.result.payload.headers;
       //console.log("-------------------------")
       //console.log(headers)
       result.id = msg.id;
