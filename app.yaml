@@ -13,7 +13,7 @@
 
 # [START gae_quickstart_yaml]
 service: node-app
-runtime: nodejs14
+runtime: nodejs22
 # [END gae_quickstart_yaml]
 
 #env_variables:
