@@ -47,13 +47,7 @@ function onclick_box(box) {
     app.messageList = [];
     app.message = "processing..."
     //console.log(box)
-    
-    fetch_json(api_url, {
-        command:"list-messages", 
-        userAccountName:app.userAccountName, 
-        labelId:box.id, 
-        messageCount:app.messageCount
-    })
+    myGmailWeb.listMessages(box.id, app.messageCount)
     .then(messageList => {
         app.messageList = messageList;
         if( messageList.length === 0 ) {
@@ -65,7 +59,7 @@ function onclick_box(box) {
     .catch(err => {
         app.message = err.stack || err.toString();
     });
-};
+}
 
 function onclick_msg(msg){
     app.currentMessage = msg;
@@ -76,11 +70,7 @@ function onclick_delete(msg){
     app.messageList = [];
     app.message = "processing..."
     console.log(msg)
-    fetch_json(api_url, {
-        command:"delete-message", 
-        userAccountName:app.userAccountName, 
-        msgid:msg.id, 
-    })
+    myGmailWeb.deleteMesage(msg.id)
     .then(result => {
         console.log(result)
         if(result.status === "OK" ) {
