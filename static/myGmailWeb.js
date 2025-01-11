@@ -51,18 +51,9 @@ const myGmailWeb = {};
       };
 
       /**
-       * Enables user interaction after all libraries are loaded.
-       */
-      function maybeEnableButtons() {
-        if (gapiInited && gisInited) {
-          document.getElementById('authorize_button').style.visibility = 'visible';
-        }
-      }
-
-      /**
        *  Sign in the user upon button click.
        */
-      function handleAuthClick() {
+      myGmailWeb.handleAuthClick = function () {
         tokenClient.callback = async (resp) => {
           if (resp.error !== undefined) {
             throw (resp);
@@ -83,7 +74,7 @@ const myGmailWeb = {};
       /**
        *  Sign out the user upon button click.
        */
-      function handleSignoutClick() {
+      myGmailWeb.handleSignoutClick = function() {
         const token = gapi.client.getToken();
         if (token !== null) {
           google.accounts.oauth2.revoke(token.access_token);
@@ -95,7 +86,7 @@ const myGmailWeb = {};
        * Print all Labels in the authorized user's inbox. If no labels
        * are found an appropriate message is printed.
        */
-      async function listLabels() {
+      myGmailWeb.listLabels = async function () {
         let response;
         try {
           response = await gapi.client.gmail.users.labels.list({
