@@ -1,7 +1,7 @@
 
 import {loginBar} from "/static/components/loginBar.js" 
 import {popupBox} from "/static/components/popupBox.js" 
-import {fetch_json} from "/static/common.js"
+//import {fetch_json} from "/static/common.js"
 
 const api_url = "/gmail";
 
@@ -17,6 +17,8 @@ var app = new Vue({
     message:"",
   },
   methods: {
+    onclick_auth: onclick_auth,
+    onclick_signout: onclick_signout,
     onclick_open: onclick_open,
     onclick_box: onclick_box,
     onclick_msg: onclick_msg,
@@ -28,6 +30,13 @@ var app = new Vue({
   }
 });
 
+function onclick_auth(){
+  myGmailWeb.auth();
+}
+
+function onclick_signout(){
+  myGmailWeb.signout();
+}
 
 function onclick_open(){
     app.messageList = [];
