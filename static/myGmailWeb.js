@@ -146,12 +146,12 @@ const myGmailWeb = {};
       maxResults: messageCount,
     });
     console.log(res)
-    if (!res.messages) {
+    if (!res.result.messages) {
       return [];
     }
 
     let results = [];
-    for (let msg of res.messages) {
+    for (let msg of res.result.messages) {
       let result = {};
       const topid = msg.id;
       //console.log(`- ${topid}`);
