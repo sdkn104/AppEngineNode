@@ -20,9 +20,7 @@ const myGmailWeb = {};
       let gapiInited = false;
       let gisInited = false;
 
-      document.getElementById('authorize_button').style.visibility = 'hidden';
-      document.getElementById('signout_button').style.visibility = 'hidden';
-
+        
       /**
        * Callback after api.js is loaded.
        */
@@ -39,8 +37,6 @@ const myGmailWeb = {};
           apiKey: API_KEY,
           discoveryDocs: [DISCOVERY_DOC],
         });
-        gapiInited = true;
-        maybeEnableButtons();
       }
 
       /**
@@ -52,8 +48,6 @@ const myGmailWeb = {};
           scope: SCOPES,
           callback: '', // defined later
         });
-        gisInited = true;
-        maybeEnableButtons();
       };
 
       /**
@@ -73,9 +67,7 @@ const myGmailWeb = {};
           if (resp.error !== undefined) {
             throw (resp);
           }
-          document.getElementById('signout_button').style.visibility = 'visible';
-          document.getElementById('authorize_button').innerText = 'Refresh';
-          await listLabels();
+          console.log(resp)
         };
 
         if (gapi.client.getToken() === null) {
@@ -96,9 +88,6 @@ const myGmailWeb = {};
         if (token !== null) {
           google.accounts.oauth2.revoke(token.access_token);
           gapi.client.setToken('');
-          document.getElementById('content').innerText = '';
-          document.getElementById('authorize_button').innerText = 'Authorize';
-          document.getElementById('signout_button').style.visibility = 'hidden';
         }
       }
 
