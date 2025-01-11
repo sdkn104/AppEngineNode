@@ -187,7 +187,8 @@ const myGmailWeb = {};
       );
       result.Body = new TextDecoder().decode(utf8Array);
       
-      } catch {
+      } catch(err) {
+        console.log(err)
         result.Subject = "error."
       }
       
