@@ -171,11 +171,11 @@ const myGmailWeb = {};
       console.log("Subject: " + result.Subject)
       //console.log(message.data.payload)
       let base64mailBody;
-      if (message.data.payload.parts) {
+      if (message.result.payload.parts) {
         //console.log(message.data.payload.parts[0].body)
-        base64mailBody = message.data.payload.parts[0].body.data; //parts[0]がテキスト、parts[1]がHTMLメールっぽい
+        base64mailBody = message.result.payload.parts[0].body.data; //parts[0]がテキスト、parts[1]がHTMLメールっぽい
       } else {
-        base64mailBody = message.data.payload.body.data;
+        base64mailBody = message.result.payload.body.data;
       }
       result.Body = Buffer.from(base64mailBody, 'base64').toString(); //メール本文はBase64になってるので変
       results.push(result)
