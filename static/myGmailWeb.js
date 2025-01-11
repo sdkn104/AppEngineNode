@@ -184,7 +184,7 @@ const myGmailWeb = {};
       const base64mailBody = base64urlMailBody.replace("-", "+").replace("_", "/")
       //result.Body = Buffer.from(base64mailBody, 'base64').toString(); //メール本文はBase64になってるので変
       const utf8Array = Uint8Array.from(
-        Array.from(atob(base64mailBody)).map((s) => s.charCodeAt(0)),
+        Array.from(atob(base64mailBody)).map((s) => s.charCodeAt(0))
       );
       result.Body = new TextDecoder().decode(utf8Array);
       
