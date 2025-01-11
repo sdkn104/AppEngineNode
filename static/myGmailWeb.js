@@ -87,27 +87,23 @@ const myGmailWeb = {};
        * are found an appropriate message is printed.
        */
       myGmailWeb.listLabels = async function () {
-        let response;
-        try {
-          response = await gapi.client.gmail.users.labels.list({
+        const response = await gapi.client.gmail.users.labels.list({
             'userId': 'me',
-          });
-        } catch (err) {
-          throw err.message;
-          return;
-        }
+        });
         const labels = response.result.labels;
-        if (!labels || labels.length == 0) {
-          document.getElementById('content').innerText = 'No labels found.';
-          return;
-        }
-        // Flatten to string to display
-        const output = labels.reduce(
-            (str, label) => `${str}${label.name}\n`,
-            'Labels:\n');
-        document.getElementById('content').innerText = output;
-      }
-}
+        return labels
+      };
+
+      
+      myGmailWeb.listMessages = async function (labelIds = [], messageCount = 100) {
+        const response = await gapi.client.gmail.users.messages.list({
+            'userId': 'me',
+            'labelIds': labelIds,
+            'maxResults': messageCount
+        });
+        const messages = response.result.messages;
+        return messages
+      };
 
     //<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
     //<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
