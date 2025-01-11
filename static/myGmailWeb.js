@@ -110,11 +110,8 @@ myGmailWeb.createMail = function (params) {
 }
 
 // Send Mail
-myGmailWeb.sendMail = async function (user = "sdkn104home", to, subject, message) {
-    try {
-        const oAuth2Client = await getAuthrizedClient(user);
-        const gmail = google.gmail({version: 'v1', auth: oAuth2Client});
-        const userProfile = await gmail.users.getProfile({userId:"me"});
+myGmailWeb.sendMail = async function (to, subject, message) {
+        const userProfile = await gapi.client.gmail.users.getProfile({userId:"me"});
         const myEmailAddress = userProfile.data.emailAddress;
         const raw = createMail({to:to, from:myEmailAddress, subject:subject, message:message});
         const sentMsg = await gapi.client.gmail.users.messages.send({
@@ -123,11 +120,7 @@ myGmailWeb.sendMail = async function (user = "sdkn104home", to, subject, message
                 raw,
             },
         });
-        return {message:sentMsg};
-    } catch(err){
-        console.log(err)
-        return {error:err.stack || err.toString()}        
-    }
+        return sentMsg
 }
 
 // Send Alert Mail
