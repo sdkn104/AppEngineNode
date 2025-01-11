@@ -15,10 +15,15 @@
 <body> 
     <div id="app">
         <login-bar action="/login"></login-bar>
+        <!--Add buttons to initiate auth sequence and sign out-->
+        <button id="authorize_button" onclick="myGmailWeb.auth()">Authorize</button>
+        <button id="signout_button" onclick="myGmailWeb.signout()">Sign Out</button>
+        
         <select v-model="userAccountName">
             <option value="sdkn104home" selected>sdkn104home@gmail.com</option>
             <option value="sdkn104">sdkn104@gmail.com</option>
         </select>
+        
         <input type="button" value="open" v-on:click="onclick_open"><br>
         Get <input type="text" v-model="messageCount"> messages<br>
         <div style="color:red;">{{message}}</div>
