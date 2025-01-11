@@ -145,12 +145,13 @@ const myGmailWeb = {};
       labelIds: labelIds,
       maxResults: messageCount,
     });
-    if (!res.data.messages) {
+    console.log(res)
+    if (!res.messages) {
       return [];
     }
 
     let results = [];
-    for (let msg of res.data.messages) {
+    for (let msg of res.messages) {
       let result = {};
       const topid = msg.id;
       //console.log(`- ${topid}`);
