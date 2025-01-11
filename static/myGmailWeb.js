@@ -1,4 +1,4 @@
-// https://developers.google.com/gmail/api/quickstart/js?hl=ja
+ふ// https://developers.google.com/gmail/api/quickstart/js?hl=ja
 
 const myGmailWeb = {};
 
@@ -172,18 +172,19 @@ const myGmailWeb = {};
       result.Date = headers.find(e => e.name.toLowerCase() === "date").value;
       console.log("Subject: " + result.Subject)
       //console.log(message.data.payload)
-      let base64mailBody;
+      let base64urlMailBody;
       if (message.result.payload.parts) {
         //console.log(message.data.payload.parts[0].body)
-        base64mailBody = message.result.payload.parts[0].body.data; //parts[0]がテキスト、parts[1]がHTMLメールっぽい
+        base64urlMailBody = message.result.payload.parts[0].body.data; //parts[0]がテキスト、parts[1]がHTMLメールっぽい
       } else {
-        base64mailBody = message.result.payload.body.data;
+        base64urlMailBody = message.result.payload.body.data;
       }
-      console.log(base64mailBody)
-      console.log(atob(base64mailBody))
+      console.log(base64urlMailBody)
+      console.log(atob(base64urlMailBody))
+      const base64mailBody = base64urlMailBody.replace("-", "+").replace("_", "/")
       //result.Body = Buffer.from(base64mailBody, 'base64').toString(); //メール本文はBase64になってるので変
       const utf8Array = Uint8Array.from(
-        Array.from(atob(base64mailBody)).map((s) => s.charCodeAt(0)),
+        Array.from(atob(base64mailBody))).map((s) => s.charCodeAt(0)),
       );
       result.Body = new TextDecoder().decode(utf8Array);
       
