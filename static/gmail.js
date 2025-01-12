@@ -30,14 +30,24 @@ var app = new Vue({
   }
 });
 
-async function onclick_auth(){
-  const resp = await myGmailWeb.auth();
-  app.message = "sign in";
+function onclick_auth(){
+  myGmailWeb.auth()
+  .then(r => {
+    app.message = "sign in";
+  })
+  .catch(r => {
+    app.message = "failed sign in";
+  });
 }
 
-async function onclick_signout(){
-  const res = await myGmailWeb.signout();
-  app.message = "sign out";
+function onclick_signout(){
+  myGmailWeb.signout()
+  .then(r => {
+    app.message = "sign out";
+  })
+  .catch(r => {
+    app.message = "failed sign out";
+  });
 }
 
 function onclick_open(){
