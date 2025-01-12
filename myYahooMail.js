@@ -33,6 +33,7 @@ function getConfig(user) {
 async function listBoxes(user = "sdkn104"){
     let connection;
     try {
+	console.log(getConfig(user));
         connection = await imaps.connect(getConfig(user));
         const boxes = await connection.getBoxes();
         console.log(boxes);
