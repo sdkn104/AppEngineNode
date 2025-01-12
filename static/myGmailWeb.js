@@ -88,7 +88,9 @@ const myGmailWeb = {};
         throw(resp.error + ": " + resp.error_description);
       }
       gapi.client.setToken('');
+      return resp;
     }
+    return token;
   }
   // Promise version of original function
   function googleAccountsOauth2Revoke(access_token) {
