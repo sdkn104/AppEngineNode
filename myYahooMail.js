@@ -157,8 +157,8 @@ async function moveAllMessages(fromBoxName, toBoxName){
 // --- MAIN
 if (require.main === module) { 
     console.log('called directly'); 
-    moveAllMessages();
-    //listBoxes();
+    //moveAllMessages();
+    listBoxes();
     /*
     listMessages()
     .then(results => {
