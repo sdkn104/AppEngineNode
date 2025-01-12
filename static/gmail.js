@@ -8,7 +8,6 @@ const api_url = "/gmail";
 var app = new Vue({
   el: '#app',
   data: {
-    userAccountName:"",
     boxes:{},
     messageList:[],
     messageCount:20,
