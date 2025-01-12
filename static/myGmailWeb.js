@@ -77,15 +77,22 @@ const myGmailWeb = {};
   /**
    *  Sign out the user upon button click.
    */
-  myGmailWeb.signout = function() {
+  myGmailWeb.signout = async function() {
     const token = gapi.client.getToken();
     console.log(token);
     if (token !== null) {
-      google.accounts.oauth2.revoke(token.access_token);
+      const resp = await googleAccountsOauth2Revoke(token.access_token);
+      if(!resp.successgul){
+        throw(resp.error + ": " + resp.error_description);
+      }
       gapi.client.setToken('');
     }
   }
-
+  // Promise version of original function
+  function googleAccountsOauth2Revoke(access_token) {
+    return new Promise((resolve, reject) => google.accounts.oauth2.revoke(access_token, resolve));
+  }
+    
   /**
    * Print all Labels in the authorized user's inbox. If no labels
    * are found an appropriate message is printed.
