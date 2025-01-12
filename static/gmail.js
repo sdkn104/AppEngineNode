@@ -31,11 +31,13 @@ var app = new Vue({
 });
 
 function onclick_auth(){
-  myGmailWeb.auth();
+  const resp = await myGmailWeb.auth();
+  app.message = "sign in";
 }
 
 function onclick_signout(){
-  myGmailWeb.signout();
+  const res = await myGmailWeb.signout();
+  app.message = "sign out";
 }
 
 function onclick_open(){
