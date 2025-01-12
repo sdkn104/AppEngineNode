@@ -23,7 +23,7 @@ function getConfig(user) {
             host: src_mail_server,
             port: 993,
             tls: true,
-            authTimeout: 3000
+            authTimeout: 8000
         }
     };
     return config;
