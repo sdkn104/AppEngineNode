@@ -1,4 +1,4 @@
-Oki
+
 import {loginBar} from "/static/components/loginBar.js" 
 import {popupBox} from "/static/components/popupBox.js" 
 //import {fetch_json} from "/static/common.js"
