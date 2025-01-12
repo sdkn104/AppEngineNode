@@ -15,9 +15,6 @@ const myGmailWeb = {};
   const SCOPES = 'https://www.googleapis.com/auth/gmail.readonly';
 
   let tokenClient;
-  let gapiInited = false;
-  let gisInited = false;
-
 
   /**
    * Callback after api.js is loaded.
@@ -58,7 +55,7 @@ const myGmailWeb = {};
         reject(resp);
       }
       resolve(resp);
-      console.log(resp)
+      console.debug(resp)
     };
 
     if (gapi.client.getToken() === null) {
@@ -205,8 +202,7 @@ const myGmailWeb = {};
         console.log(err)
         result.Subject = "error."
       }
-      
-      
+    
       results.push(result)
     }
     //console.log(results);
