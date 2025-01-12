@@ -52,6 +52,7 @@ const myGmailWeb = {};
    *  Sign in the user upon button click.
    */
   myGmailWeb.auth = function() {
+    return new Promise((resolve, reject) => {
     tokenClient.callback = async (resp) => {
       if (resp.error !== undefined) {
         throw (resp);
