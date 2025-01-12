@@ -1,4 +1,4 @@
-// https://developers.google.com/gmail/api/quickstart/js?hl=ja
+no// https://developers.google.com/gmail/api/quickstart/js?hl=ja
 
 const myGmailWeb = {};
 
@@ -84,7 +84,7 @@ const myGmailWeb = {};
     console.log(token);
     if (token !== null) {
       const resp = await googleAccountsOauth2Revoke(token.access_token);
-      if(!resp.successgul){
+      if(!resp.successful){
         throw(resp.error + ": " + resp.error_description);
       }
       gapi.client.setToken('');
