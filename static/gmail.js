@@ -1,4 +1,4 @@
-
+Oki
 import {loginBar} from "/static/components/loginBar.js" 
 import {popupBox} from "/static/components/popupBox.js" 
 //import {fetch_json} from "/static/common.js"
@@ -30,12 +30,12 @@ var app = new Vue({
   }
 });
 
-function onclick_auth(){
+async function onclick_auth(){
   const resp = await myGmailWeb.auth();
   app.message = "sign in";
 }
 
-function onclick_signout(){
+async function onclick_signout(){
   const res = await myGmailWeb.signout();
   app.message = "sign out";
 }
