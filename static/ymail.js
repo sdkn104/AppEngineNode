@@ -38,6 +38,7 @@ function onclick_open() {
     app.messageList = [];
     app.boxes = [];
     app.message = "";
+    console.log(app.userAccountName)
     fetch_json(api_url, {
             command: "open", 
             userAccountName:app.userAccountName, 
