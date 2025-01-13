@@ -10,7 +10,7 @@ const request = require('request');
 const axios = require('axios');
 
 const Private = require('./Private.js')
-const myGmail = require('./myGmail.js')
+//const myGmail = require('./myGmail.js')
 const myYahooMail = require('./myYahooMail.js')
 //console.log(require)
 
@@ -83,6 +83,7 @@ app.post('/login', (req, res) => {
     }
 });
 
+/*
 // Gmail API
 app.post('/gmail', async (req, res) => {
     try {
@@ -110,6 +111,7 @@ app.post('/gmail', async (req, res) => {
         res.status(200).send({error: err.stack || err.toString()}).end();
     }
 });
+*/
 
 // Yahoo Mail API
 app.post('/ymail', async (req, res) => {
