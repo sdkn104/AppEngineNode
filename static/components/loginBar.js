@@ -1,4 +1,4 @@
-
+//https://developers.google.com/identity/gsi/web/guides/display-button?hl=ja#javascript_1
 import {loginForm} from "/static/components/loginForm.js" 
 import {fetch_json} from "/static/common.js"
 
