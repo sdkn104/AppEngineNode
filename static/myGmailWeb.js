@@ -12,7 +12,7 @@ const myGmailWeb = {};
 
   // Authorization scopes required by the API; multiple scopes can be
   // included, separated by spaces.
-  const SCOPES = 'https://www.googleapis.com/auth/gmail.readonly';
+  const SCOPES = 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send';
 
   let tokenClient;
 
@@ -108,7 +108,14 @@ const myGmailWeb = {};
 
   // Create Mail
   myGmailWeb.createMail = function(params) {
-    params.subject = new Buffer.from(params.subject).toString("base64"); //日本語対応
+    // base64url  https://pote-chil.com/posts/javascript-base64-encode-decode
+    function encodeBase64(text) {
+      const charCodes = new TextEncoder().encode(text);
+      const b64 = btoa(String.fromCharCode(...charCodes));
+      return b64;
+    }
+ 
+    params.subject = encodeBase64(params.subject); //日本語対応
     const str = [
       `Content-Type: text/plain; charset=\"UTF-8\"\n`,
       `MIME-Version: 1.0\n`,
@@ -118,7 +125,7 @@ const myGmailWeb = {};
       `subject: =?UTF-8?B?${params.subject}?= \n\n`,
       params.message
     ].join('');
-    return Buffer.from(str).toString("base64").replace(/\+/g, '-').replace(/\//g, '_');
+    return encodeBase64(str)?.replace(/[+]/g, "-")?.replace(/[/]/g, "_"); // base64url
   }
 
   // Send Mail
@@ -126,19 +133,23 @@ const myGmailWeb = {};
     const userProfile = await gapi.client.gmail.users.getProfile({
       userId: "me"
     });
-    const myEmailAddress = userProfile.data.emailAddress;
-    const raw = createMail({
+    console.log(userProfile)
+
+    const myEmailAddress = userProfile.result.emailAddress;
+    const raw = myGmailWeb.createMail({
       to: to,
       from: myEmailAddress,
       subject: subject,
       message: message
     });
+    console.log(raw)
     const sentMsg = await gapi.client.gmail.users.messages.send({
       userId: "me",
-      requestBody: {
+      resource: {
         raw,
       },
     });
+    console.log("sent: ", sentMsg)
     return sentMsg
   }
 
@@ -189,14 +200,16 @@ const myGmailWeb = {};
       } else {
         base64urlMailBody = message.result.payload.body.data;
       }
+
       // devode base64url  https://pote-chil.com/posts/javascript-base64-encode-decode
-      const base64mailBody = base64urlMailBody?.replace(/-/g, "+")?.replace(/_/g, "/")
-      //console.log(base64mailBody)
-      //result.Body = Buffer.from(base64mailBody, 'base64').toString(); //メール本文はBase64になってるので変
-      const utf8Array = Uint8Array.from(
-        Array.from(atob(base64mailBody)).map((s) => s.charCodeAt(0))
-      );
-      result.Body = new TextDecoder().decode(utf8Array);
+      function decodeBase64url(base64_text) {
+        const base64mailBody = base64_text?.replace(/-/g, "+")?.replace(/_/g, "/")
+        const utf8Array = Uint8Array.from(
+          Array.from(atob(base64mailBody)).map((s) => s.charCodeAt(0))
+        );
+        return new TextDecoder().decode(utf8Array);
+      }
+      result.Body = decodeBase64url(base64urlMailBody);
       
       } catch(err) {
         console.log(err)

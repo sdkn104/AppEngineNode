@@ -1,4 +1,3 @@
-
 import {loginBar} from "/static/components/loginBar.js" 
 import {popupBox} from "/static/components/popupBox.js" 
 //import {fetch_json} from "/static/common.js"
@@ -13,7 +12,11 @@ var app = new Vue({
     messageCount:20,
     currentMessage:null,
     enablePopupBox: false,
-    message:"",
+    enablePopupBoxSend: false,
+    message: "",
+    send_subject: "",
+    send_to: "",
+    send_body: "",
   },
   methods: {
     onclick_auth: onclick_auth,
@@ -21,6 +24,8 @@ var app = new Vue({
     onclick_open: onclick_open,
     onclick_box: onclick_box,
     onclick_msg: onclick_msg,
+    onclick_draft: onclick_draft,
+    onclick_send: onclick_send,
     onclick_delete: onclick_delete,
   },
   components: {
@@ -85,6 +90,23 @@ function onclick_msg(msg){
     app.currentMessage = msg;
     app.enablePopupBox = true;
 }
+
+function onclick_draft(){
+  app.enablePopupBoxSend = true;
+}
+
+function onclick_send(){
+  console.log("send")
+  console.log(this.send_to, this.send_subject, this.send_body);
+  myGmailWeb.sendMail(this.send_to, this.send_subject, this.send_body)
+  .then(sentMsg => {
+    console.log(sentMsg);
+  })
+  .catch(err => {
+    app.message = err.stack || err.toString();
+  })
+}
+
 
 function onclick_delete(msg){
     app.messageList = [];

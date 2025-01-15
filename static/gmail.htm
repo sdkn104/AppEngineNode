@@ -20,6 +20,7 @@
         <button id="signout_button" v-on:click="onclick_signout()">Sign Out</button>
         <br>
         
+        <input type="button" value="send..." v-on:click="onclick_draft"><br>
         <input type="button" value="open" v-on:click="onclick_open"><br>
         Get <input type="text" v-model="messageCount"> messages<br>
         <div style="color:red;">{{message}}</div>
@@ -43,6 +44,17 @@
             {{currentMessage && currentMessage.Date}}<br>
             <hr>
             <div v-html="currentMessage && currentMessage.Body.replace(/\n/g, '<br>')"></div>
+        </popup-box>
+
+        <popup-box v-bind:popup-display="enablePopupBoxSend" v-on:click_dismiss="enablePopupBoxSend = false">
+            <input type="button" v-on:click="onclick_send" value="Send">
+            <label for="cheese">Subject</label>
+            <input type="text" v-model="send_subject" value="Subject">
+            <label for="cheese">To</label>
+            <input type="text" v-model="send_to" value="To">
+            <hr>
+            <label for="cheese">Body</label>
+            <textarea v-model="send_body"></textarea>
         </popup-box>
     </div>
     <!-- gmail -->

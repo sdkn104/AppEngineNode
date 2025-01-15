@@ -3,8 +3,8 @@ export const popupBox = {
   props: ['popupDisplay'],
   data: function() {
       return {
-        loginFormUsername:"sadakane",
-        loginFormPassword:"gorosan3",
+        loginFormUsername:"",
+        loginFormPassword:"",
         modalStyle: {
             display: "block",
             position: "fixed",
